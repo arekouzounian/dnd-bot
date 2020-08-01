@@ -12,6 +12,8 @@ Current Features:
 - Greeting Feature: upon joining the server, the bot will greet you in a private DM, showcasing its command syntax as well as what commands the user can use.
 - #the-stat channel: Every day, the bot will roll "the stat" for each member of the server, and tell them what they rolled in the corresponding #the-stat text channel.
 - More features will come as soon as I can think of them.
-  
-Future Features:
 - Cloud Deployment: This bot will soon be deployed on a remote cloud server so that it is always online. 
+    
+Possible Future Features:
+ - Scheduling Help: A command used in the #scheduling chat that DMs everyone to notify them of a new session being scheduled
+ - Lookup feature: A command that uses an online database in order to look-up spells and items. 
