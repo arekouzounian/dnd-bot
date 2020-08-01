@@ -1,0 +1,157 @@
+﻿using Discord;
+using Discord.Commands;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace dnd_bot
+{
+    class SpellHelper
+    {
+        string SpellName;
+        public SpellHelper(string spellName)
+        {
+            SpellName = spellName;
+        }
+
+        public async void printSpell(SocketCommandContext Context)
+        {
+            var temp = SpellName.ToLower().Trim().Replace(' ', '-');
+            System.Net.WebClient wc = new System.Net.WebClient();
+            string webData;
+            try
+            {
+                webData = wc.DownloadString("https://www.dnd5eapi.co/api/spells/" + temp + '/');
+                var deserializedData = JsonConvert.DeserializeObject<Root>(webData);
+                //printing
+                await Context.Channel.SendMessageAsync(Format.BlockQuote(Format.Bold($"Name: {deserializedData.name}") +
+                    Format.Italics($"\n{fixNumberFormat(deserializedData)}-level {deserializedData.school.name.ToLower()}" +
+                    Format.Bold($"\nCasting Time: {deserializedData.casting_time} " +
+                    Format.Bold($"\nRange: {deserializedData.range}" +
+                    Format.Bold($"\nComponents: {getComponents(deserializedData)}" +
+                    Format.Bold($"\nDuration: {isConcentration(deserializedData)}{deserializedData.duration}" +
+                    $"\n{deserializedData.desc[0]}" +
+                    $"{atHigherLevels(deserializedData)}")))))));
+            }
+            catch(System.Net.WebException)
+            {
+                await Context.Channel.SendMessageAsync("That spell isn't on my database.");
+            }
+
+        }
+
+        public string fixNumberFormat(Root spell)
+        {
+            if (spell.level == 1)
+            {
+                return $"{spell.level}st";
+            }
+            else if (spell.level == 2)
+            {
+                return $"{spell.level}nd";
+            }
+            else if (spell.level == 3)
+            {
+                return $"{spell.level}rd";
+            }
+            else
+            {
+                return spell.level + "th";
+            }
+        }
+
+        public string getComponents(Root spell)
+        {
+            StringBuilder strB = new StringBuilder();
+            foreach(var letter in spell.components)
+            {
+                strB.Append(letter + ",");
+            }
+            if (spell.material != null)
+            {
+                strB.Append($" ({spell.material})");
+            }
+            return strB.ToString();
+        }
+
+        public string isConcentration(Root spell)
+        {
+            return spell.concentration ? "Concentration, " : "";
+        }
+
+        public string atHigherLevels(Root spell)
+        {
+            if(spell.higher_level != null)
+            {
+                return Format.Bold("\nAt Higher Levels: ") + $"{spell.higher_level[0]}";
+            }
+            return "";
+        }
+    }
+
+    public class DamageType
+    {
+        public string name { get; set; }
+        public string url { get; set; }
+    }
+
+    public class DamageAtSlotLevel
+    {
+        public string two { get; set; }
+        public string three { get; set; }
+        public string four { get; set; }
+        public string five { get; set; }
+        public string six { get; set; }
+        public string seven { get; set; }
+        public string eight { get; set; }
+        public string nine { get; set; }
+    }
+
+    public class Damage
+    {
+        public DamageType damage_type { get; set; }
+        public DamageAtSlotLevel damage_at_slot_level { get; set; }
+    }
+
+    public class School
+    {
+        public string name { get; set; }
+        public string url { get; set; }
+    }
+
+    public class Class
+    {
+        public string name { get; set; }
+        public string url { get; set; }
+    }
+
+    public class Subclass
+    {
+        public string name { get; set; }
+        public string url { get; set; }
+    }
+
+    public class Root
+    {
+        public string _id { get; set; }
+        public string index { get; set; }
+        public string name { get; set; }
+        public List<string> desc { get; set; }
+        public List<string> higher_level { get; set; }
+        public string range { get; set; }
+        public List<string> components { get; set; }
+        public string material { get; set; }
+        public bool ritual { get; set; }
+        public string duration { get; set; }
+        public bool concentration { get; set; }
+        public string casting_time { get; set; }
+        public int level { get; set; }
+        public string attack_type { get; set; }
+        public Damage damage { get; set; }
+        public School school { get; set; }
+        public List<Class> classes { get; set; }
+        public List<Subclass> subclasses { get; set; }
+        public string url { get; set; }
+    }
+}

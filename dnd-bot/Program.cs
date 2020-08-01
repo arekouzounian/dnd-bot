@@ -17,6 +17,7 @@ namespace dnd_bot
         public static SocketCommandContext gContext;
 
         public Random gen = new Random();
+        public bool statRolled = true;
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -70,7 +71,7 @@ namespace dnd_bot
                 $"\n So for example, you could say {client.CurrentUser.Mention} \"roll 1d20\"" +
                 $"\n\n Currently, my only command is 'roll,' where I'll roll some dice for you!"));
 
-            await user.SendMessageAsync(Format.Italics("If you'd like to see the source code behind this bot, visit {GITHUB HERE}"));
+            await user.SendMessageAsync(Format.Italics("If you'd like to see the source code behind this bot, visit https://github.com/arekouzounian/dnd-bot"));
         }
 
         private async Task Client_Ready()
@@ -81,9 +82,14 @@ namespace dnd_bot
         private async Task Client_Log(LogMessage arg)
         {
             Console.WriteLine($"{DateTime.Now} at {arg.Source}] {arg.Message}");
-            if (DateTime.Now.Hour >= 11 && DateTime.Now.Hour < 12)
+            if (DateTime.Now.Hour >= 13 && DateTime.Now.Hour < 14 && !statRolled)
             {
                 rollForTheStat();
+                statRolled = true;
+            }
+            else if (DateTime.Now.Hour >= 0 && DateTime.Now.Hour < 1)
+            {
+                statRolled = false;
             }
         }
 

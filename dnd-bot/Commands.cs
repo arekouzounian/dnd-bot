@@ -107,5 +107,19 @@ namespace dnd_bot
                 await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {gen.Next(1, 21)} for {Format.Bold("the stat")} today.");
             }
         }
+
+        [Command("spell")]
+        public async Task findSpell(string spellName)
+        {
+            SpellHelper spelper = new SpellHelper(spellName);
+            spelper.printSpell(Context);
+
+        }
+
+        //spells
+        //monsters (requires admin)
+        //races
+        //classes
+
     }
 }
