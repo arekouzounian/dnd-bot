@@ -25,7 +25,19 @@ namespace dnd_bot
                 webData = wc.DownloadString("https://www.dnd5eapi.co/api/spells/" + temp + '/');
                 var deserializedData = JsonConvert.DeserializeObject<Root>(webData);
                 //printing
-                await Context.Channel.SendMessageAsync(Format.BlockQuote(Format.Bold($"Name: {deserializedData.name}") +
+                var eb = new EmbedBuilder();
+                eb.Color = Color.Blue;
+                eb.WithTitle($"Spell Name: {deserializedData.name}");
+                eb.AddField("Level:", $"{fixNumberFormat(deserializedData)}-level {deserializedData.school.name.ToLower()}");
+                eb.AddField("Casting Time:", deserializedData.casting_time);
+                eb.AddField("Range:", deserializedData.range);
+                eb.AddField("Components:", getComponents(deserializedData));
+                eb.AddField("Duration:", isConcentration(deserializedData) + deserializedData.duration);
+                eb.AddField("Description:", deserializedData.desc[0]);
+                atHigherLevels(deserializedData, eb);
+                await Context.Channel.SendMessageAsync(null, false, eb.Build());
+                /*
+                //await Context.Channel.SendMessageAsync(Format.BlockQuote(Format.Bold($"Name: {deserializedData.name}") +
                     Format.Italics($"\n{fixNumberFormat(deserializedData)}-level {deserializedData.school.name.ToLower()}" +
                     Format.Bold($"\nCasting Time: {deserializedData.casting_time} " +
                     Format.Bold($"\nRange: {deserializedData.range}" +
@@ -33,6 +45,7 @@ namespace dnd_bot
                     Format.Bold($"\nDuration: {isConcentration(deserializedData)}{deserializedData.duration}" +
                     $"\n{deserializedData.desc[0]}" +
                     $"{atHigherLevels(deserializedData)}")))))));
+                */
             }
             catch(System.Net.WebException)
             {
@@ -80,13 +93,14 @@ namespace dnd_bot
             return spell.concentration ? "Concentration, " : "";
         }
 
-        public string atHigherLevels(Root spell)
+        public EmbedBuilder atHigherLevels(Root spell, EmbedBuilder eb)
         {
             if(spell.higher_level != null)
             {
-                return Format.Bold("\nAt Higher Levels: ") + $"{spell.higher_level[0]}";
+                return eb.AddField("At Higher Levels:", spell.higher_level[0]);
+                
             }
-            return "";
+            return eb;
         }
     }
 

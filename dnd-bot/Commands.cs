@@ -96,16 +96,8 @@ namespace dnd_bot
         [RequireOwner]
         public async Task test()
         {
-            Random gen = new Random();
-            var channel = Program.client.GetGuild(738549927537410048).GetChannel(738606355148963950);
-            var users = Program.client.GetGuild(738549927537410048).Users;
-            await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
-            foreach (var user in users)
-            {
-                if (user.IsBot)
-                    continue;
-                await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {gen.Next(1, 21)} for {Format.Bold("the stat")} today.");
-            }
+            await Context.Channel.SendMessageAsync("Str\tDex\tCha\tInt\tWis");
+            await Context.Channel.SendMessageAsync("10\t10\t10\t10\t10");
         }
 
         [Command("spell")]
@@ -116,7 +108,16 @@ namespace dnd_bot
 
         }
 
-        //spells
+        [Command("monster")]
+        //[RequireUserPermission(GuildPermission.Administrator)]
+        public async Task findMonster(string monsterName)
+        {
+            MonsterHelper melper = new MonsterHelper(monsterName);
+            melper.printMonster(Context);
+            
+        }
+
+        //spells - 
         //monsters (requires admin)
         //races
         //classes
