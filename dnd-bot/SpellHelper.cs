@@ -49,7 +49,7 @@ namespace dnd_bot
             }
             catch(System.Net.WebException)
             {
-                await Context.Channel.SendMessageAsync("That spell isn't on my database.");
+                await Context.Channel.SendMessageAsync("That spell isn't in my spellbook.");
             }
 
         }

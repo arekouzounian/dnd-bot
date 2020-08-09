@@ -32,7 +32,7 @@ namespace dnd_bot
                 eb.AddField("Hit Points:", jsonMonster.hit_points);
                 eb.AddField("Speed: ", getSpeed(jsonMonster));
                 eb.AddField("Stats:", getStats(jsonMonster));
-                eb.AddField("Saving Throws:", getSavingThrowProficiencies(jsonMonster, eb));
+                getSavingThrowProficiencies(jsonMonster, eb); 
                 eb.AddField("Skills:", getSkills(jsonMonster));
                 eb.AddField("Vulnerabilities/Immunities:", getVulnerabilities(jsonMonster));
                 eb.AddField("Senses: ", getSenses(jsonMonster));
@@ -41,26 +41,10 @@ namespace dnd_bot
                 getSpecialSkills(jsonMonster, eb);
 
                 await context.Channel.SendMessageAsync(null, false, eb.Build());
-                /*
-              await context.Channel.SendMessageAsync(Format.BlockQuote(Format.Bold($"{jsonMonster.name}" +
-                $"\n{jsonMonster.size} {jsonMonster.type}, {jsonMonster.alignment}" + 
-                $"\nArmor Class: {jsonMonster.armor_class}" +
-                $"\nHit Points: {jsonMonster.hit_points}" +
-                $"\n{getSpeed(jsonMonster)}" +
-                $"\n{getStats(jsonMonster)}" +
-                $"\nSaving Throws: {getSavingThrowProficiencies(jsonMonster)}" +
-                $"\nSkills: {getSkills(jsonMonster)}" +
-                $"\n{getVulnerabilities(jsonMonster)}" +
-                $"\nSenses: {getSenses(jsonMonster)}" +
-                $"\nLanguages: {jsonMonster.languages}" +
-                $"\nChallenge (CR): {jsonMonster.challenge_rating}" +
-                $"{getSpecialSkills(jsonMonster)}" +
-                $"")));
-                */
             }
             catch (System.Net.WebException)
             {
-                await context.Channel.SendMessageAsync("That monster isn't on my database.");
+                await context.Channel.SendMessageAsync("That monster isn't in my bestiary."); //but this might help-> send 5 images
             }
 
         }
@@ -213,7 +197,7 @@ namespace dnd_bot
             {
                 foreach (var ability in monster.special_abilities)
                 {
-                    strB.Append($"{ability.name}: {ability.desc}");
+                    strB.Append($"{Format.Bold(ability.name)}: {ability.desc}");
                     if (ability.usage != null)
                     {
                         strB.Append($"({ability.usage.times} {ability.usage.type})");
