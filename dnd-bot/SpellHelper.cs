@@ -33,7 +33,7 @@ namespace dnd_bot
                 eb.AddField("Range:", deserializedData.range);
                 eb.AddField("Components:", getComponents(deserializedData));
                 eb.AddField("Duration:", isConcentration(deserializedData) + deserializedData.duration);
-                eb.AddField("Description:", deserializedData.desc[0]);
+                eb.AddField("Description:", getDesc(deserializedData));
                 atHigherLevels(deserializedData, eb);
                 await Context.Channel.SendMessageAsync(null, false, eb.Build());
                 /*
@@ -101,6 +101,17 @@ namespace dnd_bot
                 
             }
             return eb;
+        }
+
+        public string getDesc(Root spell)
+        {
+            StringBuilder strB = new StringBuilder();
+            foreach(var description in spell.desc)
+            {
+                strB.Append(description);
+                strB.Append("\n");
+            }
+            return strB.ToString();
         }
     }
 
