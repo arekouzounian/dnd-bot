@@ -17,7 +17,7 @@ namespace dnd_bot
 
         public async void printSpell(SocketCommandContext Context)
         {
-            var temp = SpellName.ToLower().Trim().Replace(' ', '-');
+            var temp = SpellName.ToLower().Trim().Replace(' ', '-').Replace('/', '-');
             System.Net.WebClient wc = new System.Net.WebClient();
             string webData;
             try
@@ -29,6 +29,7 @@ namespace dnd_bot
                 eb.Color = Color.Blue;
                 eb.WithTitle($"Spell Name: {deserializedData.name}");
                 eb.AddField("Level:", $"{fixNumberFormat(deserializedData)}-level {deserializedData.school.name.ToLower()}");
+                eb.AddField("Classes: ", getClasses(deserializedData));
                 eb.AddField("Casting Time:", deserializedData.casting_time);
                 eb.AddField("Range:", deserializedData.range);
                 eb.AddField("Components:", getComponents(deserializedData));
@@ -37,16 +38,6 @@ namespace dnd_bot
                 atHigherLevels(deserializedData, eb);
                 eb.WithFooter($"Reference: https://5thsrd.org/spellcasting/spells/" + temp.Replace("-", "_") + "/");
                 await Context.Channel.SendMessageAsync(null, false, eb.Build());
-                /*
-                //await Context.Channel.SendMessageAsync(Format.BlockQuote(Format.Bold($"Name: {deserializedData.name}") +
-                    Format.Italics($"\n{fixNumberFormat(deserializedData)}-level {deserializedData.school.name.ToLower()}" +
-                    Format.Bold($"\nCasting Time: {deserializedData.casting_time} " +
-                    Format.Bold($"\nRange: {deserializedData.range}" +
-                    Format.Bold($"\nComponents: {getComponents(deserializedData)}" +
-                    Format.Bold($"\nDuration: {isConcentration(deserializedData)}{deserializedData.duration}" +
-                    $"\n{deserializedData.desc[0]}" +
-                    $"{atHigherLevels(deserializedData)}")))))));
-                */
             }
             catch(System.Net.WebException)
             {
@@ -116,6 +107,16 @@ namespace dnd_bot
                 }
             }
             return strB.ToString();
+        }
+
+        public string getClasses(Root spell)
+        {
+            StringBuilder strB = new StringBuilder();
+            foreach(var pcClass in spell.classes)
+            {
+                strB.Append(pcClass.name + ", ");
+            }
+            return strB.Append(" ").Replace(",  ", "").ToString();
         }
     }
 
