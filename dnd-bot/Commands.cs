@@ -124,6 +124,13 @@ namespace dnd_bot
             await Context.Channel.SendMessageAsync(null, false, eb.Build());
         }
 
+        [Command("roll for the stat")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task rollForStat()
+        {
+            Program.rollForTheStat();
+        }
+
         //spells - 
         //monsters (requires admin) - 
         //races

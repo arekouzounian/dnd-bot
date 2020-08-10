@@ -39,7 +39,7 @@ namespace dnd_bot
                 getLanguages(jsonMonster, eb);
                 eb.AddField("Challenge Rating (CR):", jsonMonster.challenge_rating);
                 getSpecialSkills(jsonMonster, eb);
-
+                eb.WithFooter("Reference: https://5thsrd.org/gamemaster_rules/monsters/" + monster.Replace("-", "_") + "/");
                 await context.Channel.SendMessageAsync(null, false, eb.Build());
             }
             catch (System.Net.WebException)

@@ -35,6 +35,7 @@ namespace dnd_bot
                 eb.AddField("Duration:", isConcentration(deserializedData) + deserializedData.duration);
                 eb.AddField("Description:", getDesc(deserializedData));
                 atHigherLevels(deserializedData, eb);
+                eb.WithFooter($"Reference: https://5thsrd.org/spellcasting/spells/" + temp.Replace("-", "_") + "/");
                 await Context.Channel.SendMessageAsync(null, false, eb.Build());
                 /*
                 //await Context.Channel.SendMessageAsync(Format.BlockQuote(Format.Bold($"Name: {deserializedData.name}") +
@@ -108,8 +109,11 @@ namespace dnd_bot
             StringBuilder strB = new StringBuilder();
             foreach(var description in spell.desc)
             {
-                strB.Append(description);
-                strB.Append("\n");
+                if(strB.ToString().Length + description.Length < 1024)
+                {
+                    strB.Append(description);
+                    strB.Append("\n");
+                }
             }
             return strB.ToString();
         }

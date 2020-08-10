@@ -122,8 +122,9 @@ namespace dnd_bot
             }
         }
 
-        public async void rollForTheStat()
+        public static async void rollForTheStat()
         {
+            Random gen = new Random();
             var channel = client.GetGuild(738549927537410048).GetChannel(738606355148963950);
             var users = client.GetGuild(738549927537410048).Users;
             await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
