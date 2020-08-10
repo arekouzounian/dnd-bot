@@ -34,7 +34,7 @@ namespace dnd_bot
                 eb.AddField("Stats:", getStats(jsonMonster));
                 getSavingThrowProficiencies(jsonMonster, eb); 
                 eb.AddField("Skills:", getSkills(jsonMonster));
-                eb.AddField("Vulnerabilities/Immunities:", getVulnerabilities(jsonMonster));
+                getVulnerabilities(jsonMonster, eb);
                 eb.AddField("Senses: ", getSenses(jsonMonster));
                 getLanguages(jsonMonster, eb);
                 eb.AddField("Challenge Rating (CR):", jsonMonster.challenge_rating);
@@ -126,52 +126,46 @@ namespace dnd_bot
             return strB.ToString();
         }
 
-        public string getVulnerabilities(MonsterRoot monster)
+        public EmbedBuilder getVulnerabilities(MonsterRoot monster, EmbedBuilder eb)
         {
-            StringBuilder strB = new StringBuilder();
             if (monster.damage_immunities.Count > 0)
             {
-                strB.Append("Damage Immunities: ");
+                StringBuilder strB = new StringBuilder();
                 foreach (var immunity in monster.damage_immunities)
                 {
                     strB.Append($"{immunity}, ");
-
                 }
-                strB.Append(" ");
-                strB.Replace(",  ", "");
+                eb.AddField("Damage Immunities: ", strB.Append(" ").Replace(", ", "").ToString());
             }
             if (monster.damage_resistances.Count > 0)
             {
-                strB.Append("\nDamage Resistances: ");
+                StringBuilder strB = new StringBuilder();
                 foreach (var resistance in monster.damage_resistances)
                 {
                     strB.Append($"{resistance}, ");
                 }
-                strB.Append(" ");
-                strB.Replace(",  ", "");
+                eb.AddField("Damage Resistances: ", strB.Append(" ").Replace(", ", "").ToString());
             }
             if (monster.damage_vulnerabilities.Count > 0)
             {
-                strB.Append("\nDamage Vulnerabilities: ");
-                foreach (var vuln in monster.damage_vulnerabilities)
+                StringBuilder strB = new StringBuilder();
+                foreach (var vulnerability in monster.damage_vulnerabilities)
                 {
-                    strB.Append($"{vuln}, ");
+                    strB.Append($"{vulnerability}, ");
                 }
-                strB.Append(" ");
-                strB.Replace(",  ", "");
+                eb.AddField("Damage Vulnerabilities: ", strB.Append(" ").Replace(", ", "").ToString());
             }
             if (monster.condition_immunities.Count > 0)
             {
-                strB.Append("\nCondition Immunities: ");
+                StringBuilder strB = new StringBuilder();
                 foreach (var immunity in monster.condition_immunities)
                 {
-                    strB.Append($"{immunity.name}, ");
+                    strB.Append($"{immunity}, ");
                 }
-                strB.Append(" ");
-                strB.Replace(",  ", "");
+                eb.AddField("Condition Immunities: ", strB.Append(" ").Replace(", ", "").ToString());
             }
 
-            return strB.ToString();
+            return eb;
         }
 
         public string getSenses(MonsterRoot monster)
