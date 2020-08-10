@@ -32,8 +32,8 @@ namespace dnd_bot
                 eb.AddField("Hit Points:", jsonMonster.hit_points);
                 eb.AddField("Speed: ", getSpeed(jsonMonster));
                 eb.AddField("Stats:", getStats(jsonMonster));
-                getSavingThrowProficiencies(jsonMonster, eb); 
-                eb.AddField("Skills:", getSkills(jsonMonster));
+                getSavingThrowProficiencies(jsonMonster, eb);
+                getSkills(jsonMonster, eb);
                 getVulnerabilities(jsonMonster, eb);
                 eb.AddField("Senses: ", getSenses(jsonMonster));
                 getLanguages(jsonMonster, eb);
@@ -110,7 +110,7 @@ namespace dnd_bot
             return eb;
         }
 
-        public string getSkills(MonsterRoot monster)
+        public EmbedBuilder getSkills(MonsterRoot monster, EmbedBuilder eb)
         {
             StringBuilder strB = new StringBuilder();
             foreach (var skill in monster.proficiencies)
@@ -120,10 +120,12 @@ namespace dnd_bot
                     strB.Append($"{skill.name.Remove(0, 7)} +{skill.value}, ");
                 }
             }
-            strB.Append(" ");
-            strB.Replace(",  ", "");
+            if(strB.Length > 0)
+            {
+                eb.AddField("Skills:", strB.Append(" ").Replace(",  ", "").ToString());
+            }
 
-            return strB.ToString();
+            return eb;
         }
 
         public EmbedBuilder getVulnerabilities(MonsterRoot monster, EmbedBuilder eb)
@@ -362,7 +364,7 @@ namespace dnd_bot
         public List<conditionImmunity> condition_immunities { get; set; }
         public Senses senses { get; set; }
         public string languages { get; set; }
-        public int challenge_rating { get; set; }
+        public double challenge_rating { get; set; }
         public List<SpecialAbility> special_abilities { get; set; }
         public List<Action> actions { get; set; }
         public List<LegendaryAction> legendary_actions { get; set; }
