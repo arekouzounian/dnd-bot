@@ -128,12 +128,18 @@ namespace dnd_bot
             var channel = client.GetGuild(738549927537410048).GetChannel(738606355148963950);
             var users = client.GetGuild(738549927537410048).Users;
             await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
+            int rollCount = 0;
+            int amtOfRolls = 0;
             foreach(var user in users)
             {
                 if (user.IsBot)
                     continue;
-                await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {gen.Next(1, 21)} for {Format.Bold("the stat")} today.");
+                amtOfRolls++;
+                var numRolled = gen.Next(1, 21);
+                rollCount += numRolled;
+                await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {numRolled} for {Format.Bold("the stat")} today.");
             }
+            await (channel as ISocketMessageChannel).SendMessageAsync($"The average roll for {Format.Bold("the stat")} today was: {rollCount / amtOfRolls}");
         }
     }
 }
