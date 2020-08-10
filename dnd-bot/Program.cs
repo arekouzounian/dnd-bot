@@ -65,13 +65,8 @@ namespace dnd_bot
             var playerRole = client.GetGuild(738549927537410048).GetRole(738556835036135467);
             await user.AddRoleAsync(playerRole);
             await user.SendMessageAsync(Format.Bold("Hello! Welcome to the server. I'm dndbot, and I was made specifically for this server."));
-            await user.SendMessageAsync(Format.BlockQuote($"'''Here's how to use my commands: " +
-                $"\nThe command syntax is as follows: {client.CurrentUser.Mention} \"[command]\" " +
-                $"\nIt's important that you put the quotation marks for commands that are more than 1 word long." +
-                $"\n So for example, you could say {client.CurrentUser.Mention} \"roll 1d20\"" +
-                $"\n\n Currently, my only command is 'roll,' where I'll roll some dice for you!"));
-
-            await user.SendMessageAsync(Format.Italics("If you'd like to see the source code behind this bot, visit https://github.com/arekouzounian/dnd-bot"));
+            var eb = getHelp.helpTextEmbed;
+            await user.SendMessageAsync(null, false, eb.Build());
         }
 
         private async Task Client_Ready()
@@ -87,7 +82,7 @@ namespace dnd_bot
                 rollForTheStat();
                 statRolled = true;
             }
-            else if (DateTime.Now.Hour >= 0 && DateTime.Now.Hour < 1)
+            else if (DateTime.Now.Hour >= 1 && DateTime.Now.Hour < 2)
             {
                 statRolled = false;
             }

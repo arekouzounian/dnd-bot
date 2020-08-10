@@ -117,8 +117,15 @@ namespace dnd_bot
             
         }
 
+        [Command("help"), Alias("Help")]
+        public async Task help()
+        {
+            var eb = getHelp.helpTextEmbed;
+            await Context.Channel.SendMessageAsync(null, false, eb.Build());
+        }
+
         //spells - 
-        //monsters (requires admin)
+        //monsters (requires admin) - 
         //races
         //classes
 
