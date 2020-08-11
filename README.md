@@ -6,7 +6,7 @@ It is for the same reason that a lot of the code checks for users and guild by u
 I don't plan on having dndbot be on any other servers.
 
 Current Features:
-- Roll Command: using the command format "<botmention> roll <amount of dice>d<amount of sides each individual die has>," the bot will roll 
+- Roll Command: using the command format "[botmention] roll [amount of dice]d[amount of sides each individual die has]," the bot will roll 
     however many dice of however many sides you like, up to a maximum of 500 dice. The bot will then show the sum of the die rolls!
     If you're rolling d20s, the bot also tells you how many critical successes and/or failures you rolled.
 - Greeting Feature: upon joining the server, the bot will greet you in a private DM, showcasing its command syntax as well as what commands the user can use.
