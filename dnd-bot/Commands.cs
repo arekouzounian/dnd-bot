@@ -29,7 +29,7 @@ namespace dnd_bot
             else
             {
                 var nums = rollCode.Split('d');
-                if(nums.Length > 2)
+                if(nums.Length != 2)
                 {
                     await Context.Channel.SendMessageAsync($"That is an invalid amount of dice. The amount should look like this: [number of dice]d[number of sides on each given die]");
                     return;
@@ -59,9 +59,23 @@ namespace dnd_bot
                     }
                     sum += rolls[i];
                 }
+                var charLimit = 1900;
                 if(rolls.Length > 1)
                 {
-                    await Context.Channel.SendMessageAsync(Format.Code($"{strB.ToString()}"));
+                    if(strB.ToString().Length > charLimit)
+                    {
+                        var amtOfMsgs = Math.Ceiling((double)(strB.Length / charLimit));    //(double)strB.ToString().Length / charLimit > (int)strB.ToString().Length / charLimit ? (int)strB.ToString().Length / charLimit + 1 : (int)strB.ToString().Length / charLimit;
+                        for(int i = 0; i < amtOfMsgs; i++)
+                        {
+                            var substring = Format.Code(strB.ToString().Substring(i * charLimit, charLimit));
+                            await Context.Channel.SendMessageAsync(substring);
+                        }
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync(Format.Code($"{strB.ToString()}"));
+                    }
+                    
                 }
                 await Context.Channel.SendMessageAsync(Format.Code($"You Rolled {sum}."));
 
