@@ -19,7 +19,11 @@ namespace dnd_bot
             int num;
             if(int.TryParse(rollCode, out num))
             {
-                await Context.Channel.SendMessageAsync($"You Rolled {num}.");
+                await Context.Channel.SendMessageAsync(Format.Code($"You Rolled {num}."));
+                if(num == 17)
+                {
+                    await Context.Channel.SendMessageAsync(Format.Bold(Format.Italics("That doesn't hit.")));
+                }
                 return;
             }
             else
