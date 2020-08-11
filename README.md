@@ -14,7 +14,7 @@ Current Features:
 - 'spell' command: using the 'spell' command, the bot will lookup the specified spell using the 'dnd5eapi.co' API, and output all the information about the specified spell to the channel.
 - 'monster' command: much like the 'spell' command, thebot will use the same API to look up the given monster, and output relevant details about the monster to the text channel.
 - More features will come as soon as I can think of them.
-- Cloud Deployment: This bot will soon be deployed on a remote cloud server so that it is always online. 
+- Cloud Deployment: This bot currently is deployed on a remote cloud server so that it is always online. 
     
 Possible Future Features:
  - Scheduling Help: A command used in the #scheduling chat that DMs everyone to notify them of a new session being scheduled
