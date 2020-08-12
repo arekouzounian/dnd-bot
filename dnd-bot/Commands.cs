@@ -11,6 +11,8 @@ namespace dnd_bot
 {
     public class Commands : ModuleBase<SocketCommandContext>
     {
+        public WeaponHelper welper = new WeaponHelper();
+
         [Command("roll")]
         public async Task roll(string rollCode)
         {
@@ -148,11 +150,37 @@ namespace dnd_bot
         {
             Program.rollForTheStat();
         }
+        
+        [Command("addweapon")]
+        //[RequireOwner]
+        public async Task addWeapon(string name, string damage, string damageType, string effects)
+        {
+            welper.AddWeapon(name, damage, damageType, effects);
+            await Context.Channel.SendMessageAsync("Weapon Logged Successfully.");
+        }
 
-        //spells - 
-        //monsters (requires admin) - 
-        //races
-        //classes
-
+        [Command("getweapons")] 
+        //[RequireOwner]
+        public async Task getWeapons()
+        {
+            var weaponList = welper.GetWeapons();
+            if(weaponList.Weapons.Count > 0)
+            {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.WithTitle("Weapons");
+                eb.WithColor(Color.DarkGrey);
+                foreach(var weapon in weaponList.Weapons)
+                {
+                    eb.AddField(weapon.Name, $"Damage Dice: {weapon.DamageDice}" +
+                        $"\nDamage Type: {weapon.DamageType}" +
+                        $"\nEffects: {weapon.Effects}");
+                }
+                await Context.Channel.SendMessageAsync(null, false, eb.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("I don't have any weapons stored to display here.");
+            }
+        }
     }
 }
