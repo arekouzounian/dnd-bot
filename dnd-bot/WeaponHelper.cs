@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Discord.WebSocket;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,10 +38,10 @@ namespace dnd_bot
             }
         }
 
-        public void AddWeapon(string name, string damage, string damageType, string effects)
+        public void AddWeapon(string name, string damage, string damageType, string effects, ulong ownerID)
         {
             weapons = GetWeapons();
-            weapons.Weapons.Add(new Weapon(name, damage, damageType, effects));
+            weapons.Weapons.Add(new Weapon(name, damage, damageType, effects, ownerID));
             using (StreamWriter sw = File.CreateText(path))
             {
                 sw.WriteLine(JsonConvert.SerializeObject(weapons));
@@ -54,12 +55,14 @@ namespace dnd_bot
         public string DamageDice;
         public string DamageType;
         public string Effects;
-        public Weapon(string name, string damageDice, string damageType, string effects)
+        public ulong OwnerID;
+        public Weapon(string name, string damageDice, string damageType, string effects, ulong ownerID)
         {
             Name = name;
             DamageDice = damageDice;
             DamageType = damageType;
             Effects = effects;
+            OwnerID = ownerID; 
         }
     }
     public class WeaponList

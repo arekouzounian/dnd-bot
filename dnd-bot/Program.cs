@@ -130,6 +130,7 @@ namespace dnd_bot
             await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
             int rollCount = 0;
             int amtOfRolls = 0;
+            var theStatText = Format.Bold("the stat");
             foreach(var user in users)
             {
                 if (user.IsBot)
@@ -137,9 +138,9 @@ namespace dnd_bot
                 amtOfRolls++;
                 var numRolled = gen.Next(1, 21);
                 rollCount += numRolled;
-                await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {numRolled} for {Format.Bold("the stat")} today.");
+                await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {numRolled} for {theStatText} today.");
             }
-            await (channel as ISocketMessageChannel).SendMessageAsync($"The average roll for {Format.Bold("the stat")} today was: {rollCount / amtOfRolls}"); //finding the average
+            await (channel as ISocketMessageChannel).SendMessageAsync($"The average roll for {theStatText} today was: {rollCount / amtOfRolls}"); //finding the average
         }
     }
 }

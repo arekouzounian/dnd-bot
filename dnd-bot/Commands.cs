@@ -155,7 +155,7 @@ namespace dnd_bot
         //[RequireOwner]
         public async Task addWeapon(string name, string damage, string damageType, string effects)
         {
-            welper.AddWeapon(name, damage, damageType, effects);
+            welper.AddWeapon(name, damage, damageType, effects, Context.User.Id);
             await Context.Channel.SendMessageAsync("Weapon Logged Successfully.");
         }
 
@@ -167,19 +167,46 @@ namespace dnd_bot
             if(weaponList.Weapons.Count > 0)
             {
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.WithTitle("Weapons");
+                eb.WithTitle($"{Context.User.Username}'s Weapons");
                 eb.WithColor(Color.DarkGrey);
+                int weaponCount = 0;
                 foreach(var weapon in weaponList.Weapons)
                 {
-                    eb.AddField(weapon.Name, $"Damage Dice: {weapon.DamageDice}" +
+                    if(weapon.OwnerID == Context.User.Id)
+                    {
+                        eb.AddField(weapon.Name, $"Damage Dice: {weapon.DamageDice}" +
                         $"\nDamage Type: {weapon.DamageType}" +
                         $"\nEffects: {weapon.Effects}");
+                        weaponCount++;
+                    }
+                }
+                if(weaponCount == 0)
+                {
+                    eb.AddField("No Weapons Here.", "Please use the 'addweapon' command to add your weapons!");
                 }
                 await Context.Channel.SendMessageAsync(null, false, eb.Build());
             }
             else
             {
                 await Context.Channel.SendMessageAsync("I don't have any weapons stored to display here.");
+            }
+        }
+
+        [Command("rolldamage")]
+        public async Task rollDamage(string weaponName)
+        {
+            bool weaponRolled = false;
+            foreach(var weapon in welper.GetWeapons().Weapons)
+            {
+                if (weapon.Name.ToLower() == weaponName.ToLower() && weapon.OwnerID == Context.User.Id)
+                {
+                    await roll(weapon.DamageDice);
+                    weaponRolled = true;
+                }
+            }
+            if(!weaponRolled)
+            {
+                await Context.Channel.SendMessageAsync("You don't have that weapon.");
             }
         }
     }
