@@ -41,11 +41,34 @@ namespace dnd_bot
         public void AddWeapon(string name, string damage, string damageType, string effects, ulong ownerID)
         {
             weapons = GetWeapons();
-            weapons.Weapons.Add(new Weapon(name, damage, damageType, effects, ownerID));
+            if(!weapons.Weapons.Contains(new Weapon(name, damage, damageType, effects, ownerID)))
+            {
+                weapons.Weapons.Add(new Weapon(name, damage, damageType, effects, ownerID));
+            }
+            SaveWeapons(weapons);
+        }
+
+        private void SaveWeapons(WeaponList weaponList)
+        {
             using (StreamWriter sw = File.CreateText(path))
             {
-                sw.WriteLine(JsonConvert.SerializeObject(weapons));
+                sw.WriteLine(JsonConvert.SerializeObject(weaponList));
             }
+        }
+
+        public bool RemoveWeapon(string weaponName, SocketUser weaponOwner)
+        {
+            var weaponsList = GetWeapons();
+            foreach(var weapon in weaponsList.Weapons)
+            {
+                if(weapon.Name.ToLower() == weaponName.ToLower() && weapon.OwnerID == weaponOwner.Id)
+                {
+                    weaponsList.Weapons.Remove(weapon);
+                    SaveWeapons(weaponsList);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

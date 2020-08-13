@@ -209,5 +209,19 @@ namespace dnd_bot
                 await Context.Channel.SendMessageAsync("You don't have that weapon.");
             }
         }
+
+        [Command("removeweapon")]
+        public async Task removeWeapon(string weaponName)
+        {
+            var wasRemoved = welper.RemoveWeapon(weaponName, Context.User);
+            if(wasRemoved)
+            {
+                await Context.Channel.SendMessageAsync($"Removed {weaponName} successfully.");
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("I couldn't remove that weapon.");
+            }
+        }
     }
 }
