@@ -18,6 +18,7 @@ namespace dnd_bot
 
         public Random gen = new Random();
         public bool statRolled = true;
+        public theStatHandler statHandler = new theStatHandler();
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -79,7 +80,7 @@ namespace dnd_bot
             Console.WriteLine($"{DateTime.Now} at {arg.Source}] {arg.Message}");
             if (DateTime.Now.Hour >= 13 && DateTime.Now.Hour < 14 && !statRolled)
             {
-                rollForTheStat();
+                statHandler.rollForTheStat();
                 statRolled = true;
             }
             else if (DateTime.Now.Hour >= 1 && DateTime.Now.Hour < 2)
@@ -122,25 +123,5 @@ namespace dnd_bot
             }
         }
 
-        public static async void rollForTheStat()
-        {
-            Random gen = new Random();
-            var channel = client.GetGuild(738549927537410048).GetChannel(738606355148963950);
-            var users = client.GetGuild(738549927537410048).Users;
-            await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
-            int rollCount = 0;
-            int amtOfRolls = 0;
-            var theStatText = Format.Bold("the stat");
-            foreach(var user in users)
-            {
-                if (user.IsBot)
-                    continue;
-                amtOfRolls++;
-                var numRolled = gen.Next(1, 21);
-                rollCount += numRolled;
-                await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {numRolled} for {theStatText} today.");
-            }
-            await (channel as ISocketMessageChannel).SendMessageAsync($"The average roll for {theStatText} today was: {rollCount / amtOfRolls}"); //finding the average
-        }
     }
 }

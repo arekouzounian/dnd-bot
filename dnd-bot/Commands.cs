@@ -12,6 +12,7 @@ namespace dnd_bot
     public class Commands : ModuleBase<SocketCommandContext>
     {
         public WeaponHelper welper = new WeaponHelper();
+        public theStatHandler statHandler = new theStatHandler();
 
         [Command("roll")]
         public async Task roll(string rollCode)
@@ -148,7 +149,7 @@ namespace dnd_bot
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task rollForStat()
         {
-            Program.rollForTheStat();
+            statHandler.rollForTheStat();
         }
         
         [Command("addweapon")]
@@ -207,6 +208,19 @@ namespace dnd_bot
             if(!weaponRolled)
             {
                 await Context.Channel.SendMessageAsync("You don't have that weapon.");
+            }
+        }
+
+        [Command("statAvg")]
+        public async Task getStatAvg()
+        {
+            if(statHandler.getCareerAvg(Context.User.Id) == -1)
+            {
+                await Context.Channel.SendMessageAsync($"I don't have your career average stored yet. Once {Format.Bold("the stat")} has been rolled more, I can compute your average.");
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync($"Your career average for {Format.Bold("the stat")} is: {statHandler.getCareerAvg(Context.User.Id)}.");
             }
         }
 
