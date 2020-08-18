@@ -38,14 +38,20 @@ namespace dnd_bot
             }
         }
 
-        public void AddWeapon(string name, string damage, string damageType, string effects, ulong ownerID)
+        public bool AddWeapon(string name, string damage, string damageType, string effects, ulong ownerID)
         {
             weapons = GetWeapons();
+            var inCorrectFormat = checkForCorrectFormat(new string[] { name, damage, damageType, effects });
+            if(!inCorrectFormat)
+            {
+                return false;
+            }
             if(!weapons.Weapons.Contains(new Weapon(name, damage, damageType, effects, ownerID)))
             {
                 weapons.Weapons.Add(new Weapon(name, damage, damageType, effects, ownerID));
             }
             SaveWeapons(weapons);
+            return true;
         }
 
         private void SaveWeapons(WeaponList weaponList)
@@ -69,6 +75,25 @@ namespace dnd_bot
                 }
             }
             return false;
+        }
+
+        private bool checkForCorrectFormat(string[] itemsToCheck) //returns true for correct format, false for bad formatting
+        {
+            foreach(var item in itemsToCheck)
+            {
+                foreach(var character in item)
+                {
+                    if((int)character < 32 || (int)character > 12)
+                    {
+                        return false;
+                    }
+                }
+                if(item.Contains("\n") || item.Length > 50)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 

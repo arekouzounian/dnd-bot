@@ -99,8 +99,8 @@ namespace dnd_bot
             if (Context.Message.Author.IsBot) return;
 
             int ArgPos = 0;
-
-            if (!Message.HasMentionPrefix(client.CurrentUser, ref ArgPos))
+            //bool bruh = Message.HasCharPrefix('!', ref ArgPos);
+            if (!Message.HasMentionPrefix(client.CurrentUser, ref ArgPos) && !Message.HasCharPrefix('/', ref ArgPos))
             {
                 return;
             }

@@ -115,10 +115,9 @@ namespace dnd_bot
 
         [Command("test")]
         [RequireOwner]
-        public async Task test()
+        public async Task test(string testString)
         {
-            await Context.Channel.SendMessageAsync("Str\tDex\tCha\tInt\tWis");
-            await Context.Channel.SendMessageAsync("10\t10\t10\t10\t10");
+            ;
         }
 
         [Command("spell")]
@@ -156,8 +155,15 @@ namespace dnd_bot
         //[RequireOwner]
         public async Task addWeapon(string name, string damage, string damageType, string effects)
         {
-            welper.AddWeapon(name, damage, damageType, effects, Context.User.Id);
-            await Context.Channel.SendMessageAsync("Weapon Logged Successfully.");
+            var weaponAdded = welper.AddWeapon(name, damage, damageType, effects, Context.User.Id);
+            if(weaponAdded)
+            {
+                await Context.Channel.SendMessageAsync("Weapon Logged Successfully.");
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("Weapon Log Unsuccessful.");
+            }
         }
 
         [Command("getweapons")] 
@@ -182,6 +188,45 @@ namespace dnd_bot
                     }
                 }
                 if(weaponCount == 0)
+                {
+                    eb.AddField("No Weapons Here.", "Please use the 'addweapon' command to add your weapons!");
+                }
+                await Context.Channel.SendMessageAsync(null, false, eb.Build());
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("I don't have any weapons stored to display here.");
+            }
+        }
+
+        [Command("getweapons")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task getWeapons(string userMention)
+        {
+            var user = getUser(userMention);
+            if (user == null)
+            {
+                return;
+            }
+
+            var weaponList = welper.GetWeapons();
+            if (weaponList.Weapons.Count > 0)
+            {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.WithTitle($"{user.Username}'s Weapons");
+                eb.WithColor(Color.DarkGrey);
+                int weaponCount = 0;
+                foreach (var weapon in weaponList.Weapons)
+                {
+                    if (weapon.OwnerID == user.Id)
+                    {
+                        eb.AddField(weapon.Name, $"Damage Dice: {weapon.DamageDice}" +
+                        $"\nDamage Type: {weapon.DamageType}" +
+                        $"\nEffects: {weapon.Effects}");
+                        weaponCount++;
+                    }
+                }
+                if (weaponCount == 0)
                 {
                     eb.AddField("No Weapons Here.", "Please use the 'addweapon' command to add your weapons!");
                 }
@@ -227,8 +272,24 @@ namespace dnd_bot
         [Command("removeweapon")]
         public async Task removeWeapon(string weaponName)
         {
-            var wasRemoved = welper.RemoveWeapon(weaponName, Context.User);
-            if(wasRemoved)
+            await removeGivenWeapon(weaponName, Context.User);
+        }
+        [Command("removeweapon")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task removeWeapon(string weaponName, string userMention)
+        {
+            var user = getUser(userMention);
+            if (user == null)
+            {
+                return;
+            }
+
+            await removeGivenWeapon(weaponName, user);
+        }
+        private async Task removeGivenWeapon(string weaponName, SocketUser user)
+        {
+            var wasRemoved = welper.RemoveWeapon(weaponName, user);
+            if (wasRemoved)
             {
                 await Context.Channel.SendMessageAsync($"Removed {weaponName} successfully.");
             }
@@ -236,6 +297,20 @@ namespace dnd_bot
             {
                 await Context.Channel.SendMessageAsync("I couldn't remove that weapon.");
             }
+        }
+
+        public SocketUser getUser(string userMention)
+        {
+            SocketUser user = null;
+            foreach (var currentUser in Context.Guild.Users)
+            {
+                if (currentUser.Mention == userMention)
+                {
+                    user = currentUser;
+                }
+            }
+
+            return user;
         }
     }
 }
