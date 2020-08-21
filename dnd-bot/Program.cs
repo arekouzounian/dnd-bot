@@ -20,6 +20,7 @@ namespace dnd_bot
         public bool statRolled = true;
         public theStatHandler statHandler = new theStatHandler();
 
+
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
 
@@ -121,7 +122,8 @@ namespace dnd_bot
                     await Context.Channel.SendMessageAsync("That's not a command.");
                 }
             }
-        }
 
+        }
     }
+
 }

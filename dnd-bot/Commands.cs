@@ -256,7 +256,7 @@ namespace dnd_bot
             }
         }
 
-        [Command("statAvg")]
+        [Command("statAvg"), Alias("statAnvg")]
         public async Task getStatAvg()
         {
             if(statHandler.getCareerAvg(Context.User.Id) == -1)
@@ -285,6 +285,33 @@ namespace dnd_bot
             }
 
             await removeGivenWeapon(weaponName, user);
+        }
+
+        [Command("dmMode")]
+        [RequireOwner]
+        public async Task DmMode()
+        {
+            await Context.Channel.DeleteMessageAsync(Context.Message);
+            bool isDone = false;
+
+            while(!isDone)
+            {
+                var msg = Console.ReadLine();
+
+                if(msg == "terminate")
+                {
+                    isDone = true;
+                    continue;
+                }
+                else if(msg == "")
+                {
+                    continue;
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync(msg);
+                }
+            }
         }
         private async Task removeGivenWeapon(string weaponName, SocketUser user)
         {

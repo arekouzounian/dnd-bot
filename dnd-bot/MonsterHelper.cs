@@ -102,7 +102,7 @@ namespace dnd_bot
                     hasProf = true;
                 }
             }
-            if(hasProf)
+            if (hasProf)
             {
                 eb.AddField("Saving Throw Proficiencies: ", strB.ToString());
             }
@@ -120,7 +120,7 @@ namespace dnd_bot
                     strB.Append($"{skill.name.Remove(0, 7)} +{skill.value}, ");
                 }
             }
-            if(strB.Length > 0)
+            if (strB.Length > 0)
             {
                 eb.AddField("Skills:", strB.Append(" ").Replace(",  ", "").ToString());
             }
@@ -137,7 +137,7 @@ namespace dnd_bot
                 {
                     strB.Append($"{immunity}, ");
                 }
-                eb.AddField("Damage Immunities: ", strB.Append(" ").Replace(", ", "").ToString());
+                eb.AddField("Damage Immunities: ", strB.ToString());
             }
             if (monster.damage_resistances.Count > 0)
             {
@@ -146,7 +146,7 @@ namespace dnd_bot
                 {
                     strB.Append($"{resistance}, ");
                 }
-                eb.AddField("Damage Resistances: ", strB.Append(" ").Replace(", ", "").ToString());
+                eb.AddField("Damage Resistances: ", strB.ToString());
             }
             if (monster.damage_vulnerabilities.Count > 0)
             {
@@ -155,16 +155,16 @@ namespace dnd_bot
                 {
                     strB.Append($"{vulnerability}, ");
                 }
-                eb.AddField("Damage Vulnerabilities: ", strB.Append(" ").Replace(", ", "").ToString());
+                eb.AddField("Damage Vulnerabilities: ", strB.ToString());
             }
             if (monster.condition_immunities.Count > 0)
             {
                 StringBuilder strB = new StringBuilder();
                 foreach (var immunity in monster.condition_immunities)
                 {
-                    strB.Append($"{immunity}, ");
+                    strB.Append($"{immunity.name}, ");
                 }
-                eb.AddField("Condition Immunities: ", strB.Append(" ").Replace(", ", "").ToString());
+                eb.AddField("Condition Immunities: ", strB.ToString());
             }
 
             return eb;
@@ -188,26 +188,26 @@ namespace dnd_bot
 
         public EmbedBuilder getSpecialSkills(MonsterRoot monster, EmbedBuilder eb)
         {
-            StringBuilder strB = new StringBuilder("");
             if (monster.special_abilities.Count > 0)
             {
                 foreach (var ability in monster.special_abilities)
                 {
-                    strB.Append($"{Format.Bold(ability.name)}: {ability.desc}");
                     if (ability.usage != null)
                     {
-                        strB.Append($"({ability.usage.times} {ability.usage.type})");
+                        eb.AddField(ability.name, $"{ability.desc} ({ability.usage.type}/{ability.usage.times})");
                     }
-                    strB.Append("\n");
+                    else
+                    {
+                        eb.AddField(ability.name, ability.desc);
+                    }
                 }
-                eb.AddField("Special Skills:", strB.ToString());
             }
             return eb;
         }
 
         public EmbedBuilder getLanguages(MonsterRoot monster, EmbedBuilder eb)
         {
-            if(monster.languages != "")
+            if (monster.languages != "")
             {
                 eb.AddField("Languages:", monster.languages);
             }
