@@ -17,7 +17,8 @@ namespace dnd_bot
         {
             stats = new StatSheet()
             {
-                userStats = new Dictionary<ulong, double>()
+                userStats = new Dictionary<ulong, double>(),
+                daysPassed = 0
             };
             path = Path.Combine(Directory.GetCurrentDirectory(), "stats.json").Replace(@"\", @"\\");
             if (!File.Exists(path))
@@ -48,7 +49,7 @@ namespace dnd_bot
         public async void rollForTheStat()
         {
             Random gen = new Random();
-            var channel = Program.client.GetGuild(738549927537410048).GetChannel(738606355148963950);
+            var channel = Program.client.GetGuild(738549927537410048).GetChannel(746999483342127104);
             var users = Program.client.GetGuild(738549927537410048).Users;
             await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
             int rollCount = 0;
@@ -68,8 +69,15 @@ namespace dnd_bot
                 {
                     double avg;
                     statSheet.userStats.TryGetValue(user.Id, out avg);
-                    avg += numRolled;
-                    avg /= 2;
+                    if(statSheet.daysPassed > 1)
+                    {
+                        avg = ((avg * (statSheet.daysPassed - 1)) + numRolled) / (statSheet.daysPassed);
+                    }
+                    else
+                    {
+                        avg += numRolled;
+                        avg /= 2;
+                    }
                     statSheet.userStats[user.Id] = avg;
                 }
                 else
@@ -77,6 +85,7 @@ namespace dnd_bot
                     statSheet.userStats.Add(user.Id, numRolled);
                 }
             }
+            statSheet.daysPassed++;
             saveStatSheet(statSheet);
             await (channel as ISocketMessageChannel).SendMessageAsync($"The average roll for {theStatText} today was: {rollCount / amtOfRolls}"); //finding the average
         }
@@ -86,7 +95,7 @@ namespace dnd_bot
             var statSheet = getStatSheet();
             if(statSheet.userStats.ContainsKey(userId))
             {
-                return (int)Math.Round(statSheet.userStats[userId]);
+                return (int)statSheet.userStats[userId];
             }
             else
             {
@@ -97,5 +106,6 @@ namespace dnd_bot
     public class StatSheet
     {
         public Dictionary<ulong, double> userStats;
+        public int daysPassed;
     }
 }
