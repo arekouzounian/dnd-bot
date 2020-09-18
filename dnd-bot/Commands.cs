@@ -268,6 +268,14 @@ namespace dnd_bot
                 await Context.Channel.SendMessageAsync($"Your career average for {Format.Bold("the stat")} is: {statHandler.getCareerAvg(Context.User.Id)}.");
             }
         }
+        [Command("resetStats")]
+        [RequireOwner]
+        public async Task resetStatAvg()
+        {
+            await Context.Channel.SendMessageAsync("Resetting total averages...");
+            statHandler.resetStatSheet(statHandler.getStatSheet());
+            await Context.Channel.SendMessageAsync("Reset Successful.");
+        }
 
         [Command("removeweapon")]
         public async Task removeWeapon(string weaponName)

@@ -46,10 +46,23 @@ namespace dnd_bot
             }
         }
 
+        public void resetStatSheet(StatSheet stats)
+        {
+            stats = new StatSheet()
+            {
+                userStats = new Dictionary<ulong, double>(),
+                daysPassed = 0
+            };
+            using(StreamWriter sw = File.CreateText(path))
+            {
+                sw.WriteLine(JsonConvert.SerializeObject(stats));
+            }
+        }
+
         public async void rollForTheStat()
         {
             Random gen = new Random();
-            var channel = Program.client.GetGuild(738549927537410048).GetChannel(746999483342127104);
+            var channel = Program.client.GetGuild(738549927537410048).GetChannel(738606355148963950);
             var users = Program.client.GetGuild(738549927537410048).Users;
             await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
             int rollCount = 0;
