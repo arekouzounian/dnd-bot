@@ -83,12 +83,12 @@ namespace dnd_bot
             {
                 foreach(var character in item)
                 {
-                    if((int)character < 32 || (int)character > 12)
+                    if(character < 32 && character > 12)
                     {
                         return false;
                     }
                 }
-                if(item.Contains("\n") || item.Length > 50)
+                if(item.Contains("\n") || item.Length > 500)
                 {
                     return false;
                 }

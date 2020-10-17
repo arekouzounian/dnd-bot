@@ -20,9 +20,9 @@ namespace dnd_bot
             string calculations = "";
             if (args.Length == 1)
             {
-                foreach(var character in args[0])
+                foreach (var character in args[0])
                 {
-                    if(character > 41 && character < 48 && character != 44 && character != 46) 
+                    if (character > 41 && character < 48 && character != 44 && character != 46)
                     {
                         string[] arr = new string[2];
                         int index = args[0].IndexOf(character);
@@ -98,7 +98,7 @@ namespace dnd_bot
                 eb.WithTitle("Dice Roller");
                 eb.WithAuthor(Context.User);
                 eb.WithColor(getUserColor(Context.User as SocketGuildUser));
-                var charLimit = 1900;
+                var charLimit = 1000;
                 if (strB.ToString().Length > charLimit)
                 {
                     var amtOfMsgs = Math.Ceiling((double)(strB.Length / charLimit));
@@ -106,7 +106,7 @@ namespace dnd_bot
                     for (int i = 0; i < amtOfMsgs; i++)
                     {
                         var substring = strB.ToString().Substring(i * charLimit, charLimit);
-                        eb.AddField($"Rolls Part {i}", substring);
+                        eb.AddField($"Rolls Part {i + 1}", substring);
                     }
                 }
                 else
@@ -383,8 +383,16 @@ namespace dnd_bot
         }
 
         [Command("rolldamage")]
-        public async Task rollDamage(string weaponName)
+        public async Task rollDamage(params string[] args)
         {
+            StringBuilder strB = new StringBuilder();
+            foreach(var arg in args)
+            {
+                strB.Append(arg + " ");
+            }
+            strB.Append("  ");
+            strB.Replace("   ", "");
+            var weaponName = strB.ToString();
             bool weaponRolled = false;
             foreach (var weapon in welper.GetWeapons().Weapons)
             {
