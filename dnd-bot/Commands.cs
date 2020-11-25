@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Dangl.Calculator;
+using Discord.Rest;
 
 namespace dnd_bot
 {
@@ -12,6 +13,7 @@ namespace dnd_bot
     {
         public WeaponHelper welper = new WeaponHelper();
         public theStatHandler statHandler = new theStatHandler();
+        public SchedulingHelper schelper = new SchedulingHelper();
 
         [Command("roll")]
         public async Task roll(params string[] args)
@@ -252,7 +254,7 @@ namespace dnd_bot
         [RequireOwner]
         public async Task test(string testString)
         {
-            ;
+            
         }
 
         [Command("spell")]
@@ -288,7 +290,7 @@ namespace dnd_bot
             await Context.Channel.SendMessageAsync(null, false, eb.Build());
         }
 
-        [Command("roll for the stat")]
+        [Command("rollforthestat")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task rollForStat()
         {
@@ -471,6 +473,33 @@ namespace dnd_bot
             }
 
             return user;
+        }
+
+        [Command("scheduling")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ScheduleGame(string date)
+        {
+            //add code to stop it from scheduling multiple games through the execution of multiple commands
+            var eb = schelper.scheduleSession(date);
+            await Context.Channel.SendMessageAsync(null, false, eb.Build());
+        }
+
+        public static async void splitUpLongMessageAsync(string msg, ISocketMessageChannel channel)
+        {
+            var charLimit = 1000;
+            if(msg.Length >= charLimit )
+            {
+                var amtOfMsgs = Math.Ceiling((double)(msg.Length / charLimit));
+                for(int i = 0; i < amtOfMsgs; i++)
+                {
+                    var substring = msg.Substring(i * charLimit, charLimit);
+                    await channel.SendMessageAsync(substring);
+                }
+            }
+            else
+            {
+                await channel.SendMessageAsync(msg);
+            }
         }
     }
 }
