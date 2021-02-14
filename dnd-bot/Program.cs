@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace dnd_bot
@@ -14,7 +15,6 @@ namespace dnd_bot
         public static DiscordSocketClient client;
         public CommandService Commands;
         private IServiceProvider services;
-        public static SocketCommandContext gContext;
 
         public Random gen = new Random();
 
@@ -62,6 +62,7 @@ namespace dnd_bot
         private async Task Client_UserJoined(SocketGuildUser user)
         {
             var playerRole = client.GetGuild(738549927537410048).GetRole(738556835036135467);
+            await (client.GetGuild(738549927537410048).GetChannel(738550230827532298) as ISocketMessageChannel).SendMessageAsync(Format.Bold($"{user.Mention}, welcome to the server!")); 
             await user.AddRoleAsync(playerRole);
             await user.SendMessageAsync(Format.Bold("Hello! Welcome to the server. I'm dndbot, and I was made specifically for this server."));
             await user.SendMessageAsync(Format.BlockQuote($"'''Here's how to use my commands: " +
@@ -90,11 +91,15 @@ namespace dnd_bot
         private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
             var Message = MessageParam as SocketUserMessage;
-            var Context = new SocketCommandContext(client, Message);
-            gContext = Context;
+            SocketCommandContext Context = new SocketCommandContext(client, Message);
 
             if (Context.Message == null || Context.Message.Content == "") return;
             if (Context.Message.Author.IsBot) return;
+
+            if(Message.Author == Context.Guild.Owner && Message.Content.ToLower().Contains("am i right"))
+            {
+                await Context.Channel.SendMessageAsync("he's right");
+            }
 
             int ArgPos = 0;
 
