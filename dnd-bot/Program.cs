@@ -17,6 +17,9 @@ namespace dnd_bot
         private IServiceProvider services;
 
         public Random gen = new Random();
+        public bool statRolled = true;
+        public theStatHandler statHandler = new theStatHandler();
+
 
         static void Main(string[] args)
         => new Program().MainAsync().GetAwaiter().GetResult();
@@ -65,13 +68,8 @@ namespace dnd_bot
             await (client.GetGuild(738549927537410048).GetChannel(738550230827532298) as ISocketMessageChannel).SendMessageAsync(Format.Bold($"{user.Mention}, welcome to the server!")); 
             await user.AddRoleAsync(playerRole);
             await user.SendMessageAsync(Format.Bold("Hello! Welcome to the server. I'm dndbot, and I was made specifically for this server."));
-            await user.SendMessageAsync(Format.BlockQuote($"'''Here's how to use my commands: " +
-                $"\nThe command syntax is as follows: {client.CurrentUser.Mention} \"[command]\" " +
-                $"\nIt's important that you put the quotation marks for commands that are more than 1 word long." +
-                $"\n So for example, you could say {client.CurrentUser.Mention} \"roll 1d20\"" +
-                $"\n\n Currently, my only command is 'roll,' where I'll roll some dice for you!"));
-
-            await user.SendMessageAsync(Format.Italics("If you'd like to see the source code behind this bot, visit {GITHUB HERE}"));
+            var eb = getHelp.helpTextEmbed;
+            await user.SendMessageAsync(null, false, eb.Build());
         }
 
         private async Task Client_Ready()
@@ -82,9 +80,14 @@ namespace dnd_bot
         private async Task Client_Log(LogMessage arg)
         {
             Console.WriteLine($"{DateTime.Now} at {arg.Source}] {arg.Message}");
-            if (DateTime.Now.Hour >= 11 && DateTime.Now.Hour < 12)
+            if (DateTime.Now.Hour >= 13 && DateTime.Now.Hour < 14 && !statRolled)
             {
-                rollForTheStat();
+                statHandler.rollForTheStat();
+                statRolled = true;
+            }
+            else if (DateTime.Now.Hour >= 1 && DateTime.Now.Hour < 2)
+            {
+                statRolled = false;
             }
         }
 
@@ -102,8 +105,8 @@ namespace dnd_bot
             }
 
             int ArgPos = 0;
-
-            if (!Message.HasMentionPrefix(client.CurrentUser, ref ArgPos))
+            //bool bruh = Message.HasCharPrefix('!', ref ArgPos);
+            if (!Message.HasMentionPrefix(client.CurrentUser, ref ArgPos) && !Message.HasCharPrefix('/', ref ArgPos))
             {
                 return;
             }
@@ -124,19 +127,8 @@ namespace dnd_bot
                     await Context.Channel.SendMessageAsync("That's not a command.");
                 }
             }
-        }
 
-        public async void rollForTheStat()
-        {
-            var channel = client.GetGuild(738549927537410048).GetChannel(738606355148963950);
-            var users = client.GetGuild(738549927537410048).Users;
-            await (channel as ISocketMessageChannel).SendMessageAsync($"Time to roll for {Format.Bold("the stat!")}");
-            foreach(var user in users)
-            {
-                if (user.IsBot)
-                    continue;
-                await (channel as ISocketMessageChannel).SendMessageAsync($"{user.Username}, you rolled {gen.Next(1, 21)} for {Format.Bold("the stat")} today.");
-            }
         }
     }
+
 }
