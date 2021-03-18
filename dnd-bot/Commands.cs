@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Dangl.Calculator;
 using Discord.Rest;
+using Discord.Addons.Interactive;
+using System.Collections.Generic;
 
 namespace dnd_bot
 {
-    public class Commands : ModuleBase<SocketCommandContext>
+    public class Commands : InteractiveBase<SocketCommandContext>
     {
         public WeaponHelper welper = new WeaponHelper();
         public theStatHandler statHandler = new theStatHandler();
@@ -50,7 +52,7 @@ namespace dnd_bot
             Random gen = new Random();
             await Context.Channel.SendMessageAsync($"Rolling {rollCode} {calculations}...");
             int num;
-            if(int.TryParse(rollCode, out num))
+            if (int.TryParse(rollCode, out num))
             {
                 var sum = Calculator.Calculate($"{num}{calculations}").Result;
 
@@ -61,12 +63,12 @@ namespace dnd_bot
                 var parsedRollCode = rollCode.Split('d');
                 int numberOfRolls = 0;
                 int sidedDie = 0;
-                if(parsedRollCode.Length == 1)
+                if (parsedRollCode.Length == 1)
                 {
                     numberOfRolls = 1;
                     sidedDie = int.Parse(parsedRollCode[0]);
                 }
-                else if(parsedRollCode.Length == 2)
+                else if (parsedRollCode.Length == 2)
                 {
                     numberOfRolls = int.Parse(parsedRollCode[0]);
                     sidedDie = int.Parse(parsedRollCode[1]);
@@ -77,15 +79,15 @@ namespace dnd_bot
                     return;
                 }
 
-                if(numberOfRolls > 500 || numberOfRolls < 1)
+                if (numberOfRolls > 500 || numberOfRolls < 1)
                 {
                     await Context.Channel.SendMessageAsync("Incorrect amount of dice. You can only roll up to 500 dice at a time.");
                     return;
                 }
 
                 StringBuilder strB = new StringBuilder();
-                int sum = 0; 
-                for(int i = 0; i < numberOfRolls; i++)
+                int sum = 0;
+                for (int i = 0; i < numberOfRolls; i++)
                 {
                     int roll = gen.Next(1, sidedDie + 1);
                     strB.Append($"{roll}");
@@ -119,7 +121,7 @@ namespace dnd_bot
 
                 await Context.Channel.SendMessageAsync(null, false, eb.Build());
             }
-            
+
             #region shitCode
             /*
             int num;
@@ -239,7 +241,7 @@ namespace dnd_bot
         }
         public Color getUserColor(SocketGuildUser user)
         {
-            foreach(var role in user.Roles)
+            foreach (var role in user.Roles)
             {
                 Console.WriteLine(role.Color);
                 if (role.Id != 738556835036135467 && role.Id != 738549927537410048 && !user.IsBot)
@@ -254,7 +256,7 @@ namespace dnd_bot
         [RequireOwner]
         public async Task test(string testString)
         {
-            
+
         }
 
         [Command("spell")]
@@ -297,11 +299,13 @@ namespace dnd_bot
             statHandler.rollForTheStat();
         }
 
-        [Command("addweapon")]
-        //[RequireOwner]
-        public async Task addWeapon(string name, string damage, string damageType, string effects)
+        [Command("addweapon", RunMode = RunMode.Async)]
+        public async Task addWeapon()
         {
-            var weaponAdded = welper.AddWeapon(name, damage, damageType, effects, Context.User.Id);
+            var input = GetWeaponInput(Context).Result;
+            
+            //this is hacky, i know. too bad.
+            var weaponAdded = welper.AddWeapon(input[0], input[1], input[2], input[3], Context.User.Id);
             if (weaponAdded)
             {
                 await Context.Channel.SendMessageAsync("Weapon Logged Successfully.");
@@ -388,7 +392,7 @@ namespace dnd_bot
         public async Task rollDamage(params string[] args)
         {
             StringBuilder strB = new StringBuilder();
-            foreach(var arg in args)
+            foreach (var arg in args)
             {
                 strB.Append(arg + " ");
             }
@@ -487,10 +491,10 @@ namespace dnd_bot
         public static async void splitUpLongMessageAsync(string msg, ISocketMessageChannel channel)
         {
             var charLimit = 1000;
-            if(msg.Length >= charLimit )
+            if (msg.Length >= charLimit)
             {
                 var amtOfMsgs = Math.Ceiling((double)(msg.Length / charLimit));
-                for(int i = 0; i < amtOfMsgs; i++)
+                for (int i = 0; i < amtOfMsgs; i++)
                 {
                     var substring = msg.Substring(i * charLimit, charLimit);
                     await channel.SendMessageAsync(substring);
@@ -501,5 +505,52 @@ namespace dnd_bot
                 await channel.SendMessageAsync(msg);
             }
         }
+        #region helperFuncs 
+        private async Task<string[]> GetWeaponInput(SocketCommandContext context)
+        {
+
+            string[] Fields = { "Name", "Damage Dice", "Damage Type", "Misc. Effects"};
+            string[] vals = new string[Fields.Length];
+            var msg = await context.Channel.SendMessageAsync(null, false, buildWeaponEmbed(Fields, vals, context.User));
+            for(int i = 0; i < Fields.Length; i++)
+            {
+                var askingMsg = await context.Channel.SendMessageAsync($"Please enter the Weapon's {Fields[i]}.");
+                var nextMsg = await NextMessageAsync(true, true, new TimeSpan(0, 0, 30));
+                vals[i] = nextMsg.Content;
+                
+                await askingMsg.DeleteAsync();
+                await nextMsg.DeleteAsync();
+
+                await msg.ModifyAsync(x =>
+                {
+                    x.Embed = buildWeaponEmbed(Fields, vals, context.User);
+                });
+                
+            }
+            await Context.Channel.SendMessageAsync("Done!");
+            
+
+            return vals;
+        }
+        private string buildOutputString(string[] fields, string[] vals)
+        {
+            StringBuilder strB = new StringBuilder();
+            for(int i = 0; i < fields.Length; i++)
+            {
+                strB.Append($"{fields[i]}: {vals[i]}\n");
+            }
+
+            return strB.ToString();
+        }
+        private Embed buildWeaponEmbed(string[] fields, string[] vals, SocketUser author)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithTitle("Weapon Builder");
+            eb.WithAuthor(author);
+            eb.AddField("Specifications", buildOutputString(fields, vals));
+
+            return eb.Build();
+        }
+        #endregion
     }
 }

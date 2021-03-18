@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
+using Discord.Addons.Interactive;
 
 namespace dnd_bot
 {
@@ -15,6 +16,7 @@ namespace dnd_bot
         public static DiscordSocketClient client;
         public CommandService Commands;
         private IServiceProvider services;
+        public CommandHandler commandHandler;
 
         public Random gen = new Random();
         public bool statRolled = true;
@@ -40,17 +42,19 @@ namespace dnd_bot
                 LogLevel = LogSeverity.Debug
             });
 
+
             services = new ServiceCollection()
                 .AddSingleton(this)
                 .AddSingleton(client)
                 .AddSingleton(Commands)
                 .AddSingleton<ConfigHandler>()
+                .AddSingleton<InteractiveService>()
                 .BuildServiceProvider();
 
             await services.GetService<ConfigHandler>().FillConfig();
 
-            client.MessageReceived += Client_MessageReceived;
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+            commandHandler = new CommandHandler(client, Commands, services);
+            await commandHandler.SetupAsync();
 
             client.Log += Client_Log;
             client.Ready += Client_Ready;
@@ -91,7 +95,7 @@ namespace dnd_bot
             }
         }
 
-        private async Task Client_MessageReceived(SocketMessage MessageParam)
+        /*private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
             var Message = MessageParam as SocketUserMessage;
             SocketCommandContext Context = new SocketCommandContext(client, Message);
@@ -128,7 +132,7 @@ namespace dnd_bot
                 }
             }
 
-        }
+        }*/
     }
 
 }
