@@ -122,136 +122,10 @@ namespace dnd_bot
                 await Context.Channel.SendMessageAsync(null, false, eb.Build());
             }
 
-            #region shitCode
-            /*
-            int num;
-            if (int.TryParse(rollCode, out num))
-            {
-                await Context.Channel.SendMessageAsync(Format.Code($"You Rolled {num}."));
-                if (num == 17)
-                {
-                    await Context.Channel.SendMessageAsync(Format.Bold(Format.Italics("That doesn't hit.")));
-                }
-                return;
-            }
-            else
-            {
-                var nums = rollCode.Split('d');
-                if (nums.Length != 2)
-                {
-                    await Context.Channel.SendMessageAsync($"That is an invalid amount of dice. The amount should look like this: [number of dice]d[number of sides on each given die] (+ or -) [modifier]");
-                    return;
-                }
-                if (int.Parse(nums[0]) > 500)
-                {
-                    await Context.Channel.SendMessageAsync("That is too many dice! You can only roll up to 500 dice at a time.");
-                    return;
-                }
 
-                int[] rolls = new int[int.Parse(nums[0])];
-                for (int i = 0; i < rolls.Length; i++)
-                {
-                    rolls[i] = gen.Next(1, int.Parse(nums[1]) + 1);
-                }
-                StringBuilder strB = new StringBuilder();
-                int sum = 0;
-                for (int i = 0; i < rolls.Length; i++)
-                {
-                    if (i == rolls.Length - 1 && modifier == 0)
-                    {
-                        strB.Append(rolls[i]);
-                    }
-                    else
-                    {
-                        strB.Append($"{rolls[i]} + ");
-                    }
-                    sum += rolls[i];
-                }
-                if (modifier != 0)
-                {
-                    if (operation == '+')
-                    {
-                        strB.Append($" {operation} {modifier}");
-                        sum += modifier;
-                    }
-                    else if (operation == '-')
-                    {
-                        strB.Append($" {operation} {modifier}");
-                        sum -= modifier;
-                    }
-                    else if (operation == '/')
-                    {
-                        strB.Append($" {operation} {modifier}");
-                        sum /= modifier;
-                    }
-                    else if (operation == '*')
-                    {
-                        strB.Append($" {operation} {modifier}");
-                        sum *= modifier;
-                    }
-                }
-                var charLimit = 1900;
-
-                if (strB.ToString().Length > charLimit)
-                {
-                    var amtOfMsgs = Math.Ceiling((double)(strB.Length / charLimit));
-                    for (int i = 0; i < amtOfMsgs; i++)
-                    {
-                        var substring = Format.Code(strB.ToString().Substring(i * charLimit, charLimit));
-                        await Context.Channel.SendMessageAsync(substring);
-                    }
-                }
-                else
-                {
-                    await Context.Channel.SendMessageAsync(Format.Code($"{strB.ToString()} {operation} {modifier}"));
-                }
-
-                await Context.Channel.SendMessageAsync($"Total: {sum}");
-
-                if (int.Parse(nums[1]) == 20)
-                {
-                    if (rolls.Length == 1 && rolls[0] == 20)
-                    {
-                        await Context.Channel.SendMessageAsync(Format.Bold(Format.Italics("Critical Success!")));
-                    }
-                    else if (rolls.Length == 1 && rolls[0] == 1)
-                    {
-                        await Context.Channel.SendMessageAsync(Format.Bold(Format.Italics("Critical Failure...")));
-                    }
-                    else if (rolls.Length > 1)
-                    {
-                        int winCount = 0;
-                        int failCount = 0;
-                        foreach (var roll in rolls)
-                        {
-                            if (roll == 1)
-                            {
-                                failCount++;
-                            }
-                            else if (roll == 20)
-                            {
-                                winCount++;
-                            }
-                        }
-                        await Context.Channel.SendMessageAsync($"You rolled {winCount} natural 20s and {failCount} natural 1s!");
-                    }
-                }
-            }*/
-            #endregion
-        }
-        public Color getUserColor(SocketGuildUser user)
-        {
-            foreach (var role in user.Roles)
-            {
-                Console.WriteLine(role.Color);
-                if (role.Id != 738556835036135467 && role.Id != 738549927537410048 && !user.IsBot)
-                {
-                    return role.Color;
-                }
-            }
-            return Color.Default;
         }
 
+        #region miscCommands
         [Command("test")]
         [RequireOwner]
         public async Task test(string testString)
@@ -259,6 +133,24 @@ namespace dnd_bot
 
         }
 
+        [Command("help"), Alias("Help")]
+        public async Task help()
+        {
+            var eb = getHelp.helpTextEmbed;
+            await Context.Channel.SendMessageAsync(null, false, eb.Build());
+        }
+
+        [Command("scheduling")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ScheduleGame(string date)
+        {
+            //add code to stop it from scheduling multiple games through the execution of multiple commands
+            var eb = schelper.scheduleSession(date);
+            await Context.Channel.SendMessageAsync(null, false, eb.Build());
+        }
+        #endregion
+
+        #region APICommands
         [Command("spell")]
         public async Task findSpell(params string[] spellName)
         {
@@ -273,7 +165,6 @@ namespace dnd_bot
         }
 
         [Command("monster")]
-        //[RequireUserPermission(GuildPermission.Administrator)]
         public async Task findMonster(params string[] monsterName)
         {
             StringBuilder strB = new StringBuilder();
@@ -284,28 +175,28 @@ namespace dnd_bot
             MonsterHelper melper = new MonsterHelper(strB.ToString());
             melper.printMonster(Context);
         }
+        #endregion
 
-        [Command("help"), Alias("Help")]
-        public async Task help()
-        {
-            var eb = getHelp.helpTextEmbed;
-            await Context.Channel.SendMessageAsync(null, false, eb.Build());
-        }
-
-        [Command("rollforthestat")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task rollForStat()
-        {
-            statHandler.rollForTheStat();
-        }
-
+        #region weaponsCommands
         [Command("addweapon", RunMode = RunMode.Async)]
         public async Task addWeapon()
         {
             var input = GetWeaponInput(Context).Result;
-            
+            var weapons = welper.GetWeapons().Weapons;
+            bool isValid = true, weaponAdded = false;
+            foreach (var weapon in weapons)
+            {
+                if (weapon.Name.ToLower() == input[0].ToLower())
+                {
+                    await Context.Channel.SendMessageAsync("Duplicate Weapon Names aren't allowed!");
+                    isValid = false;
+                }
+            }
             //this is hacky, i know. too bad.
-            var weaponAdded = welper.AddWeapon(input[0], input[1], input[2], input[3], Context.User.Id);
+            if (isValid)
+            {
+                weaponAdded = welper.AddWeapon(input[0], input[1], input[2], input[3], Context.User.Id);
+            }
             if (weaponAdded)
             {
                 await Context.Channel.SendMessageAsync("Weapon Logged Successfully.");
@@ -317,7 +208,6 @@ namespace dnd_bot
         }
 
         [Command("getweapons")]
-        //[RequireOwner]
         public async Task getWeapons()
         {
             var weaponList = welper.GetWeapons();
@@ -414,35 +304,14 @@ namespace dnd_bot
             }
         }
 
-        [Command("statAvg"), Alias("statAnvg")]
-        public async Task getStatAvg()
-        {
-            if (statHandler.getCareerAvg(Context.User.Id) == -1)
-            {
-                await Context.Channel.SendMessageAsync($"I don't have your career average stored yet. Once {Format.Bold("the stat")} has been rolled more, I can compute your average.");
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync($"Your career average for {Format.Bold("the stat")} is: {statHandler.getCareerAvg(Context.User.Id)}.");
-            }
-        }
-        [Command("resetStats")]
-        [RequireOwner]
-        public async Task resetStatAvg()
-        {
-            await Context.Channel.SendMessageAsync("Resetting total averages...");
-            statHandler.resetStatSheet(statHandler.getStatSheet());
-            await Context.Channel.SendMessageAsync("Reset Successful.");
-        }
-
         [Command("removeweapon")]
-        public async Task removeWeapon(string weaponName)
+        public async Task removeWeapon(params string[] args)
         {
-            await removeGivenWeapon(weaponName, Context.User);
+            await removeGivenWeapon(formatVariableInput(args), Context.User);
         }
         [Command("removeweapon")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task removeWeapon(string weaponName, string userMention)
+        public async Task removeWeapon(string userMention, params string[] args)
         {
             var user = getUser(userMention);
             if (user == null)
@@ -450,7 +319,7 @@ namespace dnd_bot
                 return;
             }
 
-            await removeGivenWeapon(weaponName, user);
+            await removeGivenWeapon(formatVariableInput(args), user);
         }
         private async Task removeGivenWeapon(string weaponName, SocketUser user)
         {
@@ -464,28 +333,83 @@ namespace dnd_bot
                 await Context.Channel.SendMessageAsync("I couldn't remove that weapon.");
             }
         }
+        #endregion
 
-        public SocketUser getUser(string userMention)
+        #region theStatCommands
+        [Command("statAvg"), Alias("statAnvg")]
+        public async Task getStatAvg()
         {
-            SocketUser user = null;
-            foreach (var currentUser in Context.Guild.Users)
+            if (statHandler.getCareerAvg(Context.User.Id) == -1)
             {
-                if (currentUser.Mention == userMention)
-                {
-                    user = currentUser;
-                }
+                await Context.Channel.SendMessageAsync($"I don't have your career average stored yet. Once {Format.Bold("the stat")} has been rolled more, I can compute your average.");
             }
-
-            return user;
+            else
+            {
+                await Context.Channel.SendMessageAsync($"Your career average for {Format.Bold("the stat")} is: {statHandler.getCareerAvg(Context.User.Id)}.");
+            }
+        }
+        [Command("rollforthestat")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task rollForStat()
+        {
+            statHandler.rollForTheStat();
         }
 
-        [Command("scheduling")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ScheduleGame(string date)
+        [Command("resetStats")]
+        [RequireOwner]
+        public async Task resetStatAvg()
         {
-            //add code to stop it from scheduling multiple games through the execution of multiple commands
-            var eb = schelper.scheduleSession(date);
-            await Context.Channel.SendMessageAsync(null, false, eb.Build());
+            await Context.Channel.SendMessageAsync("Resetting total averages...");
+            statHandler.resetStatSheet(statHandler.getStatSheet());
+            await Context.Channel.SendMessageAsync("Reset Successful.");
+        }
+        #endregion
+
+        #region helperFuncs 
+        private async Task<string[]> GetWeaponInput(SocketCommandContext context)
+        {
+
+            string[] Fields = { "Name", "Damage Dice", "Damage Type", "Misc. Effects" };
+            string[] vals = new string[Fields.Length];
+            var msg = await context.Channel.SendMessageAsync(null, false, buildWeaponEmbed(Fields, vals, context.User));
+            for (int i = 0; i < Fields.Length; i++)
+            {
+                var askingMsg = await context.Channel.SendMessageAsync($"Please enter the Weapon's {Fields[i]}.");
+                var nextMsg = await NextMessageAsync(true, true, new TimeSpan(0, 10, 30));
+                vals[i] = nextMsg.Content;
+
+                await askingMsg.DeleteAsync();
+                await nextMsg.DeleteAsync();
+
+                await msg.ModifyAsync(x =>
+                {
+                    x.Embed = buildWeaponEmbed(Fields, vals, context.User);
+                });
+
+            }
+            await Context.Channel.SendMessageAsync("Done!");
+
+
+            return vals;
+        }
+        private string buildOutputString(string[] fields, string[] vals)
+        {
+            StringBuilder strB = new StringBuilder();
+            for (int i = 0; i < fields.Length; i++)
+            {
+                strB.Append($"{fields[i]}: {vals[i]}\n");
+            }
+
+            return strB.ToString();
+        }
+        private Embed buildWeaponEmbed(string[] fields, string[] vals, SocketUser author)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithTitle("Weapon Builder");
+            eb.WithAuthor(author);
+            eb.AddField("Specifications", buildOutputString(fields, vals));
+
+            return eb.Build();
         }
 
         public static async void splitUpLongMessageAsync(string msg, ISocketMessageChannel channel)
@@ -505,51 +429,43 @@ namespace dnd_bot
                 await channel.SendMessageAsync(msg);
             }
         }
-        #region helperFuncs 
-        private async Task<string[]> GetWeaponInput(SocketCommandContext context)
+
+        public Color getUserColor(SocketGuildUser user)
         {
-
-            string[] Fields = { "Name", "Damage Dice", "Damage Type", "Misc. Effects"};
-            string[] vals = new string[Fields.Length];
-            var msg = await context.Channel.SendMessageAsync(null, false, buildWeaponEmbed(Fields, vals, context.User));
-            for(int i = 0; i < Fields.Length; i++)
+            foreach (var role in user.Roles)
             {
-                var askingMsg = await context.Channel.SendMessageAsync($"Please enter the Weapon's {Fields[i]}.");
-                var nextMsg = await NextMessageAsync(true, true, new TimeSpan(0, 0, 30));
-                vals[i] = nextMsg.Content;
-                
-                await askingMsg.DeleteAsync();
-                await nextMsg.DeleteAsync();
-
-                await msg.ModifyAsync(x =>
+                Console.WriteLine(role.Color);
+                if (role.Id != 738556835036135467 && role.Id != 738549927537410048 && !user.IsBot)
                 {
-                    x.Embed = buildWeaponEmbed(Fields, vals, context.User);
-                });
-                
+                    return role.Color;
+                }
             }
-            await Context.Channel.SendMessageAsync("Done!");
-            
-
-            return vals;
+            return Color.Default;
         }
-        private string buildOutputString(string[] fields, string[] vals)
+
+        private string formatVariableInput(string[] args)
         {
             StringBuilder strB = new StringBuilder();
-            for(int i = 0; i < fields.Length; i++)
+            foreach (var arg in args)
             {
-                strB.Append($"{fields[i]}: {vals[i]}\n");
+                strB.Append(arg + " ");
             }
 
-            return strB.ToString();
+            return strB.ToString().Trim();
         }
-        private Embed buildWeaponEmbed(string[] fields, string[] vals, SocketUser author)
-        {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.WithTitle("Weapon Builder");
-            eb.WithAuthor(author);
-            eb.AddField("Specifications", buildOutputString(fields, vals));
 
-            return eb.Build();
+        public SocketUser getUser(string userMention)
+        {
+            SocketUser user = null;
+            foreach (var currentUser in Context.Guild.Users)
+            {
+                if (currentUser.Mention == userMention)
+                {
+                    user = currentUser;
+                }
+            }
+
+            return user;
         }
         #endregion
     }
