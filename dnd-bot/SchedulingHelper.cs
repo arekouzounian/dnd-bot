@@ -50,12 +50,12 @@ namespace dnd_bot
 
         public async Task onReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            updateRSVP(reaction);
+            updateRSVP(reaction, channel);
         }
 
-        public void updateRSVP(SocketReaction reaction)
+        public void updateRSVP(SocketReaction reaction, ISocketMessageChannel channel)
         {
-            if(isScheduling)
+            if(isScheduling && channel.GetMessageAsync(reaction.MessageId) == _msg as IMessage)
             {
                 var user = _client.GetUser(reaction.UserId);
                 switch (reaction.Emote.Name)
@@ -84,12 +84,11 @@ namespace dnd_bot
                     default:
                         break;
                 }
+                _msg.ModifyAsync(x =>
+                {
+                    x.Embed = buildEmbed();
+                });
             }
-
-            _msg.ModifyAsync(x =>
-            {
-                x.Embed = buildEmbed();
-            });
         }
 
         public Embed buildEmbed()
