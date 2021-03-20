@@ -15,7 +15,7 @@ namespace dnd_bot
     {
         public WeaponHelper welper = new WeaponHelper();
         public theStatHandler statHandler = new theStatHandler();
-        public SchedulingHelper schelper = new SchedulingHelper();
+        public SchedulingHelper schelper = Program.Schelper;
 
         [Command("roll")]
         public async Task roll(params string[] args)
@@ -140,13 +140,31 @@ namespace dnd_bot
             await Context.Channel.SendMessageAsync(null, false, eb.Build());
         }
 
-        [Command("scheduling")]
+        [Command("schedule", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ScheduleGame(string date)
         {
-            //add code to stop it from scheduling multiple games through the execution of multiple commands
-            var eb = schelper.scheduleSession(date);
-            await Context.Channel.SendMessageAsync(null, false, eb.Build());
+            if (schelper.isScheduling)
+            {
+                await Context.Channel.SendMessageAsync("A session is already being scheduled!");
+                return;
+            }
+            schelper.scheduleSession(date, Context);
+            //var msg = await Context.Channel.SendMessageAsync(null, false, eb.Build());
+
+        }
+        [Command("endsession")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task endSchedule()
+        {
+            if(schelper.isScheduling)
+            {
+                schelper.Setup();
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("No session has been scheduled.");
+            }
         }
         #endregion
 

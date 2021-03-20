@@ -17,6 +17,7 @@ namespace dnd_bot
         public CommandService Commands;
         private IServiceProvider services;
         public CommandHandler commandHandler;
+        public static SchedulingHelper Schelper;
 
         public Random gen = new Random();
         public bool statRolled = true;
@@ -54,6 +55,7 @@ namespace dnd_bot
             await services.GetService<ConfigHandler>().FillConfig();
 
             commandHandler = new CommandHandler(client, Commands, services);
+            Schelper = new SchedulingHelper(client);
             await commandHandler.SetupAsync();
 
             client.Log += Client_Log;
