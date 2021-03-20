@@ -100,7 +100,7 @@ namespace dnd_bot
             ebMsg.AddField("In Person attendees:", RSVPList.ToString(_rsvp.inPerson));
             ebMsg.AddField("Virtual attendees:", RSVPList.ToString(_rsvp.online));
             ebMsg.AddField("Can't come:", RSVPList.ToString(_rsvp.cannotCome));
-            ebMsg.AddField("Options", "Please add a reaction to this message accordingly. React with :thumbsup: if you can make it virtually, :ok_hand: if you can make it in person, or :thumbsdown: if you can't make it.");
+            ebMsg.AddField("Options", "Please add a reaction to this message accordingly. React with :thumbsup: if you can make it in person, :ok_hand: if you can make it virtually , or :thumbsdown: if you can't make it.");
             ebMsg.AddField("Cancel", "To end the scheduling session, use the /endsession command.");
             return ebMsg.Build();
         }
