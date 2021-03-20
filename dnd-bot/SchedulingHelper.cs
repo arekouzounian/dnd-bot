@@ -55,34 +55,28 @@ namespace dnd_bot
 
         public void updateRSVP(SocketReaction reaction, ISocketMessageChannel channel)
         {
-            if(isScheduling && channel.GetMessageAsync(reaction.MessageId) == _msg as IMessage)
+            if (isScheduling && channel.GetMessageAsync(reaction.MessageId) == _msg as IMessage)
             {
                 var user = _client.GetUser(reaction.UserId);
-                switch (reaction.Emote.Name)
+                if (!_rsvp.hasResponded(user))
                 {
-                    //in person
-                    case "👍":
-                        if(!_rsvp.cannotCome.Contains(user) && !_rsvp.online.Contains(user))
-                        {
+                    switch (reaction.Emote.Name)
+                    {
+                        //in person
+                        case "👍":
                             _rsvp.inPerson.Add(user);
-                        }
-                        break;
-                    //virtual
-                    case "👌":
-                        if (!_rsvp.inPerson.Contains(user) && !_rsvp.cannotCome.Contains(user))
-                        {
+                            break;
+                        //virtual
+                        case "👌":
                             _rsvp.online.Add(user);
-                        }
-                        break;
-                    //can't
-                    case "👎":
-                        if(!_rsvp.inPerson.Contains(user) && !_rsvp.online.Contains(user))
-                        {
+                            break;
+                        //can't
+                        case "👎":
                             _rsvp.cannotCome.Add(user);
-                        }
-                        break;
-                    default:
-                        break;
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 _msg.ModifyAsync(x =>
                 {
@@ -115,12 +109,17 @@ namespace dnd_bot
             public static string ToString(List<IUser> lst)
             {
                 StringBuilder strB = new StringBuilder();
-                foreach(var user in lst)
+                foreach (var user in lst)
                 {
                     strB.Append(user.Username + ", ");
                 }
                 strB.Append(",");
                 return strB.ToString().Replace(", ,", "");
+            }
+
+            public bool hasResponded(IUser user)
+            {
+                return inPerson.Contains(user) || online.Contains(user) || cannotCome.Contains(user);
             }
         }
     }
