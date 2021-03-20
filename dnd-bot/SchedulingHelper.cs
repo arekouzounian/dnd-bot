@@ -21,8 +21,8 @@ namespace dnd_bot
         public SchedulingHelper(DiscordSocketClient client)
         {
             _client = client;
-            _client.ReactionAdded += onReactionAdded;
             Setup();
+            _client.ReactionAdded += onReactionAdded;
         }
 
         public void Setup()
@@ -53,9 +53,9 @@ namespace dnd_bot
             updateRSVP(reaction, channel);
         }
 
-        public void updateRSVP(SocketReaction reaction, ISocketMessageChannel channel)
+        public async void updateRSVP(SocketReaction reaction, ISocketMessageChannel channel)
         {
-            if (isScheduling && channel.GetMessageAsync(reaction.MessageId) == _msg as IMessage)
+            if (isScheduling && reaction.MessageId == _msg.Id)
             {
                 var user = _client.GetUser(reaction.UserId);
                 if (!_rsvp.hasResponded(user))
