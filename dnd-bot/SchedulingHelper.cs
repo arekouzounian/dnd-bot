@@ -18,6 +18,7 @@ namespace dnd_bot
         public bool isScheduling;
         private RSVPList _rsvp;
         private DateTime _date;
+        private string _time;
         public SchedulingHelper(DiscordSocketClient client)
         {
             _client = client;
@@ -36,14 +37,16 @@ namespace dnd_bot
                 cannotCome = new List<IUser>()
             };
         }
-
-        public async void scheduleSession(string date, SocketCommandContext context)
+        //no input validation. too bad.
+        public async void scheduleSession(string date, string time, SocketCommandContext context)
         {
             isScheduling = true;
             var nums = date.Split('/');
+            var timeNums = time.Split(':');
             int year = int.Parse(nums[2]);
             int day = int.Parse(nums[1]);
             int month = int.Parse(nums[0]);
+            _time = time;
             _date = new DateTime(year, month, day);
             _msg = await context.Channel.SendMessageAsync(null, false, buildEmbed());
         }
@@ -78,7 +81,7 @@ namespace dnd_bot
                             break;
                     }
                 }
-                _msg.ModifyAsync(x =>
+                await _msg.ModifyAsync(x =>
                 {
                     x.Embed = buildEmbed();
                 });
@@ -88,7 +91,7 @@ namespace dnd_bot
         public Embed buildEmbed()
         {
             var ebMsg = new EmbedBuilder();
-            ebMsg.WithTitle($"New Session Planned For: {cal.GetDayOfWeek(_date)}, {_date.Month}/{_date.Day}/{_date.Year}");
+            ebMsg.WithTitle($"New Session Planned For: {cal.GetDayOfWeek(_date)}, {_date.Month}/{_date.Day}/{_date.Year} at {_time} (Military Time)");
             ebMsg.WithColor(Color.Blue);
             ebMsg.AddField("In Person attendees:", RSVPList.ToString(_rsvp.inPerson));
             ebMsg.AddField("Virtual attendees:", RSVPList.ToString(_rsvp.online));

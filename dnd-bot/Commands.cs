@@ -143,15 +143,14 @@ namespace dnd_bot
 
         [Command("schedule", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ScheduleGame(string date)
+        public async Task ScheduleGame(string date, string time)
         {
             if (_schelper.isScheduling)
             {
                 await Context.Channel.SendMessageAsync("A session is already being scheduled!");
                 return;
             }
-            _schelper.scheduleSession(date, Context);
-            //var msg = await Context.Channel.SendMessageAsync(null, false, eb.Build());
+            _schelper.scheduleSession(date, time, Context);
 
         }
         [Command("endsession")]
