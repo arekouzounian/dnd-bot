@@ -13,9 +13,10 @@ namespace dnd_bot
 {
     public class Commands : InteractiveBase<SocketCommandContext>
     {
-        public WeaponHelper welper = new WeaponHelper();
-        public theStatHandler statHandler = new theStatHandler();
-        public SchedulingHelper schelper = Program.Schelper;
+        private WeaponHelper _welper = new WeaponHelper();
+        private theStatHandler _statHandler = new theStatHandler();
+        private SchedulingHelper _schelper = Program.Schelper;
+        private SpellHelper _spelper = new SpellHelper();
 
         [Command("roll")]
         public async Task roll(params string[] args)
@@ -144,12 +145,12 @@ namespace dnd_bot
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ScheduleGame(string date)
         {
-            if (schelper.isScheduling)
+            if (_schelper.isScheduling)
             {
                 await Context.Channel.SendMessageAsync("A session is already being scheduled!");
                 return;
             }
-            schelper.scheduleSession(date, Context);
+            _schelper.scheduleSession(date, Context);
             //var msg = await Context.Channel.SendMessageAsync(null, false, eb.Build());
 
         }
@@ -157,9 +158,9 @@ namespace dnd_bot
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task endSchedule()
         {
-            if(schelper.isScheduling)
+            if(_schelper.isScheduling)
             {
-                schelper.Setup();
+                _schelper.Setup();
             }
             else
             {
@@ -172,26 +173,33 @@ namespace dnd_bot
         [Command("spell")]
         public async Task findSpell(params string[] spellName)
         {
+            if(spellName.Length < 1)
+            {
+                await Context.Channel.SendMessageAsync("Missing parameter: spell name.");
+                return;
+            }
             StringBuilder strB = new StringBuilder();
             foreach (var word in spellName)
             {
                 strB.Append($"{word} ");
             }
-            SpellHelper spelper = new SpellHelper(strB.ToString());
-            spelper.printSpell(Context);
+            _spelper.printSpell(Context, strB.ToString());
 
         }
 
+
+        //command too buggy. not gonna bother trying to fix it.
         [Command("monster")]
         public async Task findMonster(params string[] monsterName)
         {
+            await Context.Channel.SendMessageAsync("Sorry! This functionality has been removed.");
             StringBuilder strB = new StringBuilder();
-            foreach (var word in monsterName)
-            {
-                strB.Append($"{word} ");
-            }
-            MonsterHelper melper = new MonsterHelper(strB.ToString());
-            melper.printMonster(Context);
+            //foreach (var word in monsterName)
+            //{
+            //    strB.Append($"{word} ");
+            //}
+            //MonsterHelper melper = new MonsterHelper(strB.ToString());
+            //melper.printMonster(Context);
         }
         #endregion
 
@@ -200,7 +208,7 @@ namespace dnd_bot
         public async Task addWeapon()
         {
             var input = GetWeaponInput(Context).Result;
-            var weapons = welper.GetWeapons().Weapons;
+            var weapons = _welper.GetWeapons().Weapons;
             bool isValid = true, weaponAdded = false;
             foreach (var weapon in weapons)
             {
@@ -213,7 +221,7 @@ namespace dnd_bot
             //this is hacky, i know. too bad.
             if (isValid)
             {
-                weaponAdded = welper.AddWeapon(input[0], input[1], input[2], input[3], Context.User.Id);
+                weaponAdded = _welper.AddWeapon(input[0], input[1], input[2], input[3], Context.User.Id);
             }
             if (weaponAdded)
             {
@@ -228,7 +236,7 @@ namespace dnd_bot
         [Command("getweapons")]
         public async Task getWeapons()
         {
-            var weaponList = welper.GetWeapons();
+            var weaponList = _welper.GetWeapons();
             if (weaponList.Weapons.Count > 0)
             {
                 EmbedBuilder eb = new EmbedBuilder();
@@ -267,7 +275,7 @@ namespace dnd_bot
                 return;
             }
 
-            var weaponList = welper.GetWeapons();
+            var weaponList = _welper.GetWeapons();
             if (weaponList.Weapons.Count > 0)
             {
                 EmbedBuilder eb = new EmbedBuilder();
@@ -299,16 +307,10 @@ namespace dnd_bot
         [Command("rolldamage")]
         public async Task rollDamage(params string[] args)
         {
-            StringBuilder strB = new StringBuilder();
-            foreach (var arg in args)
-            {
-                strB.Append(arg + " ");
-            }
-            strB.Append("  ");
-            strB.Replace("   ", "");
-            var weaponName = strB.ToString();
+            var weaponName = formatVariableInput(args);
             bool weaponRolled = false;
-            foreach (var weapon in welper.GetWeapons().Weapons)
+            var weapons = _welper.GetWeapons().Weapons;
+            foreach (var weapon in weapons)
             {
                 if (weapon.Name.ToLower() == weaponName.ToLower() && weapon.OwnerID == Context.User.Id)
                 {
@@ -341,7 +343,7 @@ namespace dnd_bot
         }
         private async Task removeGivenWeapon(string weaponName, SocketUser user)
         {
-            var wasRemoved = welper.RemoveWeapon(weaponName, user);
+            var wasRemoved = _welper.RemoveWeapon(weaponName, user);
             if (wasRemoved)
             {
                 await Context.Channel.SendMessageAsync($"Removed {weaponName} successfully.");
@@ -357,20 +359,20 @@ namespace dnd_bot
         [Command("statAvg"), Alias("statAnvg")]
         public async Task getStatAvg()
         {
-            if (statHandler.getCareerAvg(Context.User.Id) == -1)
+            if (_statHandler.getCareerAvg(Context.User.Id) == -1)
             {
                 await Context.Channel.SendMessageAsync($"I don't have your career average stored yet. Once {Format.Bold("the stat")} has been rolled more, I can compute your average.");
             }
             else
             {
-                await Context.Channel.SendMessageAsync($"Your career average for {Format.Bold("the stat")} is: {statHandler.getCareerAvg(Context.User.Id)}.");
+                await Context.Channel.SendMessageAsync($"Your career average for {Format.Bold("the stat")} is: {_statHandler.getCareerAvg(Context.User.Id)}.");
             }
         }
         [Command("rollforthestat")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task rollForStat()
         {
-            statHandler.rollForTheStat();
+            _statHandler.rollForTheStat();
         }
 
         [Command("resetStats")]
@@ -378,7 +380,7 @@ namespace dnd_bot
         public async Task resetStatAvg()
         {
             await Context.Channel.SendMessageAsync("Resetting total averages...");
-            statHandler.resetStatSheet(statHandler.getStatSheet());
+            _statHandler.resetStatSheet(_statHandler.getStatSheet());
             await Context.Channel.SendMessageAsync("Reset Successful.");
         }
         #endregion
