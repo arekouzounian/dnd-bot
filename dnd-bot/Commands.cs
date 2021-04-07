@@ -153,7 +153,7 @@ namespace dnd_bot
             _schelper.scheduleSession(date, time, Context);
 
         }
-        [Command("endsession")]
+        [Command("endschedule")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task endSchedule()
         {

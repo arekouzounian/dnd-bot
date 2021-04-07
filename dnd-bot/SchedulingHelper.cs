@@ -34,7 +34,9 @@ namespace dnd_bot
             {
                 inPerson = new List<IUser>(),
                 online = new List<IUser>(),
-                cannotCome = new List<IUser>()
+                cannotCome = new List<IUser>(),
+                maybe = new List<IUser>(),
+                hasResponded = new List<IUser>()
             };
         }
         //no input validation. too bad.
@@ -61,7 +63,7 @@ namespace dnd_bot
             if (isScheduling && reaction.MessageId == _msg.Id)
             {
                 var user = _client.GetUser(reaction.UserId);
-                if (!_rsvp.hasResponded(user))
+                if (!_rsvp.hasResponded.Contains(user))
                 {
                     switch (reaction.Emote.Name)
                     {
@@ -78,8 +80,10 @@ namespace dnd_bot
                             _rsvp.cannotCome.Add(user);
                             break;
                         default:
+                            _rsvp.maybe.Add(user);
                             break;
                     }
+                    _rsvp.hasResponded.Add(user);
                 }
                 await _msg.ModifyAsync(x =>
                 {
@@ -95,8 +99,9 @@ namespace dnd_bot
             ebMsg.WithColor(Color.Blue);
             ebMsg.AddField("In Person attendees:", RSVPList.ToString(_rsvp.inPerson));
             ebMsg.AddField("Virtual attendees:", RSVPList.ToString(_rsvp.online));
+            ebMsg.AddField("Maybe:", RSVPList.ToString(_rsvp.maybe));
             ebMsg.AddField("Can't come:", RSVPList.ToString(_rsvp.cannotCome));
-            ebMsg.AddField("Options", "Please add a reaction to this message accordingly. React with :thumbsup: if you can make it in person, :ok_hand: if you can make it virtually , or :thumbsdown: if you can't make it.");
+            ebMsg.AddField("Options", "Please add a reaction to this message accordingly. React with :thumbsup: if you can make it in person, :ok_hand: if you can make it virtually, :thumbsdown: if you can't make it, or any other emoji if you might be able to make it, but you're unsure.");
             ebMsg.AddField("Cancel", "To end the scheduling session, use the /endsession command.");
             return ebMsg.Build();
         }
@@ -108,6 +113,9 @@ namespace dnd_bot
             public List<IUser> inPerson;
             public List<IUser> online;
             public List<IUser> cannotCome;
+            public List<IUser> maybe;
+
+            public List<IUser> hasResponded;
 
             public static string ToString(List<IUser> lst)
             {
@@ -120,10 +128,10 @@ namespace dnd_bot
                 return strB.ToString().Replace(", ,", "");
             }
 
-            public bool hasResponded(IUser user)
-            {
-                return inPerson.Contains(user) || online.Contains(user) || cannotCome.Contains(user);
-            }
+            //public bool hasResponded(IUser user)
+            //{
+            //    return inPerson.Contains(user) || online.Contains(user) || cannotCome.Contains(user) || maybe.Contains(user);
+            //}
         }
     }
 }
