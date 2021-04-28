@@ -172,6 +172,11 @@ namespace dnd_bot
         [Command("spell")]
         public async Task findSpell(params string[] spellName)
         {
+            if(spellName[0].ToLower() == "icup")
+            {
+                await Context.Channel.SendMessageAsync("I-C-U--wait...");
+                return;
+            }
             if(spellName.Length < 1)
             {
                 await Context.Channel.SendMessageAsync("Missing parameter: spell name.");
