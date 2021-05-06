@@ -67,11 +67,38 @@ namespace dnd_bot
             if (message.Author.IsBot)
                 return;
 
-            var result = await _commands.ExecuteAsync(
+            //var lower = message.Content.ToLower();
+            //if (Context.Channel.Id == 738606355148963950 && (hammingDistance("/statavg", lower) <= 3 || hammingDistance("/statanvg", lower) <= 3))
+            //{
+            //    await message.ModifyAsync(x =>          //this doesn't work because the bot cannot  
+            //    {                                       //modify a message that isn't it's own...
+            //        x.Content = "/statAvg";             //this is so sad 
+            //    });
+            //}
+
+            var result = await _commands.ExecuteAsync
+            (
                 context: Context,
                 argPos: argPos,
-                services: _services);
+                services: _services
+            );
         }
 
+
+        private int hammingDistance(string s1, string s2)
+        {
+            if(s1.Length != s2.Length)
+            {
+                return -1;
+            }
+            int d = 0;
+            for(int i = 0; i < s1.Length; i++)
+            {
+                if (s1[i] != s2[i])
+                    ++d;
+            }
+
+            return d;
+        }
     }
 }
