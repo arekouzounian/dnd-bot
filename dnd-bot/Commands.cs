@@ -17,7 +17,9 @@ namespace dnd_bot
         private theStatHandler _statHandler = new theStatHandler();
         private SchedulingHelper _schelper = Program.Schelper;
         private SpellHelper _spelper = new SpellHelper();
+        private bool addingWeap = false;
 
+        #region rollCommand
         [Command("roll")]
         public async Task roll(params string[] args)
         {
@@ -125,6 +127,7 @@ namespace dnd_bot
 
 
         }
+#endregion
 
         #region miscCommands
         [Command("test")]
@@ -193,25 +196,37 @@ namespace dnd_bot
 
 
         //command too buggy. not gonna bother trying to fix it.
-        [Command("monster")]
-        public async Task findMonster(params string[] monsterName)
-        {
-            await Context.Channel.SendMessageAsync("Sorry! This functionality has been removed.");
-            StringBuilder strB = new StringBuilder();
-            //foreach (var word in monsterName)
-            //{
-            //    strB.Append($"{word} ");
-            //}
-            //MonsterHelper melper = new MonsterHelper(strB.ToString());
-            //melper.printMonster(Context);
-        }
+        //[Command("monster")]
+        //public async Task findMonster(params string[] monsterName)
+        //{
+        //    await Context.Channel.SendMessageAsync("Sorry! This functionality has been removed.");
+        //    StringBuilder strB = new StringBuilder();
+        //    foreach (var word in monsterName)
+        //    {
+        //        strB.Append($"{word} ");
+        //    }
+        //    MonsterHelper melper = new MonsterHelper(strB.ToString());
+        //    melper.printMonster(Context);
+        //}
         #endregion
 
+
         #region weaponsCommands
-        [Command("addweapon", RunMode = RunMode.Async)]
+        [Command("addweapon", RunMode = RunMode.Async), 
+            Summary("Adds a weapon to the user's weapon list! No extra info needed-just enter the command and follow the bot's instructions!")]
         public async Task addWeapon()
         {
+            if(addingWeap)
+            {
+                await Context.Channel.SendMessageAsync("Someone else is adding a weapon right now--try again later!");
+                return;
+            }
             var input = GetWeaponInput(Context).Result;
+            addingWeap = false;
+
+            if (input.Length < 4) //if user timed out or otherwise failed to follow bot instructions
+                return;
+
             var weapons = _welper.GetWeapons().Weapons;
             bool isValid = true, weaponAdded = false;
             foreach (var weapon in weapons)
@@ -237,7 +252,7 @@ namespace dnd_bot
             }
         }
 
-        [Command("getweapons")]
+        [Command("getweapons"), Summary("Gets your weapon list.")]
         public async Task getWeapons()
         {
             var weaponList = _welper.GetWeapons();
@@ -269,11 +284,11 @@ namespace dnd_bot
             }
         }
 
-        [Command("getweapons")]
+        [Command("getweapons"), 
+            Summary("Admin command! Get's the specified user's weapons list. The command should look something like this: /getweapons [@user mention]")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task getWeapons(string userMention)
+        public async Task getWeapons(IUser user)
         {
-            var user = getUser(userMention);
             if (user == null)
             {
                 return;
@@ -308,7 +323,8 @@ namespace dnd_bot
             }
         }
 
-        [Command("rolldamage")]
+        [Command("rolldamage"), Summary("Rolls the damage for one of your weapons! just enter '/rolldamage [weapon name]' (without the quotes) to execute the command. " +
+            "Be careful, though! if the weapon's damage was entered incorrectly (it's not in [number]d[number] + [modifiers] format) it won't work!")]
         public async Task rollDamage(params string[] args)
         {
             var weaponName = formatVariableInput(args);
@@ -392,7 +408,7 @@ namespace dnd_bot
         #region helperFuncs 
         private async Task<string[]> GetWeaponInput(SocketCommandContext context)
         {
-
+            addingWeap = true;
             string[] Fields = { "Name", "Damage Dice", "Damage Type", "Misc. Effects" };
             string[] vals = new string[Fields.Length];
             var msg = await context.Channel.SendMessageAsync(null, false, buildWeaponEmbed(Fields, vals, context.User));
