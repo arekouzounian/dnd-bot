@@ -140,7 +140,7 @@ namespace dnd_bot
         [Command("help"), Alias("Help")]
         public async Task help()
         {
-            var eb = _helpHelper.GetHelpTextEmbed();
+            var eb = _helpHelper.getHelpEmbed();
             await Context.Channel.SendMessageAsync(null, false, eb.Build());
         }
 
@@ -502,6 +502,8 @@ namespace dnd_bot
 
             return user;
         }
+
+        
         #endregion
     }
 }

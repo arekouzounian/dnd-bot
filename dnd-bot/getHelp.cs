@@ -14,7 +14,12 @@ namespace dnd_bot
             _commands = commands;
         }
 
-        public EmbedBuilder GetHelpTextEmbed()
+        public CommandService getCommands()
+        {
+            return _commands;
+        }
+
+        public EmbedBuilder getHelpEmbed()
         {
             var eb = new EmbedBuilder();
             eb.WithTitle("Help");
@@ -22,13 +27,17 @@ namespace dnd_bot
             eb.AddField("For example:", "You can say @dndbot#2832 roll 1d20, or you can say /roll 1d20.");
             foreach (var com in _commands.Commands)
             {
-                if (com.Name.ToLower().Contains("stat"))
+                if (com.Name.ToLower().Contains("stat") || strIsNullOrEmpty(com.Name) || strIsNullOrEmpty(com.Summary))
                     continue;
                 eb.AddField($"{com.Name} ", $"{com.Summary}");
             }
             eb.WithFooter("Source: This bot was made by Arek Ouzounian, and its source code can be found here: https://github.com/arekouzounian/dnd-bot");
-
             return eb;
+        }
+
+        private bool strIsNullOrEmpty(string val)
+        {
+            return val == null || val == "";
         }
     }
 }
