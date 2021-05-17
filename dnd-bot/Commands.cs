@@ -152,7 +152,7 @@ namespace dnd_bot
             _schelper.scheduleSession(date, time, Context);
         }
         [Command("endschedule"), Summary("If there is an existing scheduling tool, this command will end that scheduling tool.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        //[RequireUserPermission(GuildPermission.Administrator)]
         public async Task endSchedule()
         {
             var success = _schelper.endSession(Context.User.Id);
