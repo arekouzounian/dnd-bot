@@ -71,11 +71,6 @@ namespace dnd_bot
 
         private async Task Client_UserJoined(SocketGuildUser user)
         {
-            
-            var eb = getHelp.helpTextEmbed;
-            await user.SendMessageAsync(null, false, eb.Build());
-            var eb = getHelp.helpTextEmbed;
-            await user.SendMessageAsync(null, false, eb.Build());
         }
 
         private async Task Client_Ready()
