@@ -71,10 +71,11 @@ namespace dnd_bot
 
         private async Task Client_UserJoined(SocketGuildUser user)
         {
-        //    var playerRole = client.GetGuild(738549927537410048).GetRole(738556835036135467);
-        //    await (client.GetGuild(738549927537410048).GetChannel(738550230827532298) as ISocketMessageChannel).SendMessageAsync(Format.Bold($"{user.Mention}, welcome to the server!")); 
-        //    await user.AddRoleAsync(playerRole);
-        //    await user.SendMessageAsync(Format.Bold("Hello! Welcome to the server. I'm dndbot, and I was made specifically for this server."));
+            
+            var eb = getHelp.helpTextEmbed;
+            await user.SendMessageAsync(null, false, eb.Build());
+            var eb = getHelp.helpTextEmbed;
+            await user.SendMessageAsync(null, false, eb.Build());
         }
 
         private async Task Client_Ready()
