@@ -137,7 +137,7 @@ namespace dnd_bot
 
         }
 
-        [Command("help"), Alias("Help")]
+        [Command("helpme"), Alias("Help", "help")]
         public async Task help()
         {
             var eb = _helpHelper.getHelpEmbed();
@@ -146,28 +146,19 @@ namespace dnd_bot
 
         [Command("schedule", RunMode = RunMode.Async), Summary("Admin Command! Creates a message that users can react to in order to indicate whether they can make it to the indicated session." +
             "Extra Info: you need to enter a date and a time after the command. Example: /schedule 01/01/2021 21:00. For ease of use, all times are in PST, and are in military time so as not to be confusing.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        //[RequireUserPermission(GuildPermission.Administrator)]
         public async Task ScheduleGame(string date, string time)
         {
-            if (_schelper.isScheduling)
-            {
-                await Context.Channel.SendMessageAsync("A session is already being scheduled!");
-                return;
-            }
             _schelper.scheduleSession(date, time, Context);
-
         }
         [Command("endschedule"), Summary("If there is an existing scheduling tool, this command will end that scheduling tool.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task endSchedule()
         {
-            if(_schelper.isScheduling)
+            var success = _schelper.endSession(Context.User.Id);
+            if (!success)
             {
-                _schelper.Setup();
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync("No session has been scheduled.");
+                await Context.Channel.SendMessageAsync("Something went wrong. It doesn't look like you were scheduling a session in the first place.");
             }
         }
         #endregion

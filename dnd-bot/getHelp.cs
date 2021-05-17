@@ -27,7 +27,7 @@ namespace dnd_bot
             eb.AddField("For example:", "You can say @dndbot#2832 roll 1d20, or you can say /roll 1d20.");
             foreach (var com in _commands.Commands)
             {
-                if (com.Name.ToLower().Contains("stat") || strIsNullOrEmpty(com.Name) || strIsNullOrEmpty(com.Summary))
+                if (strIsNullOrEmpty(com.Name) || strIsNullOrEmpty(com.Summary))
                     continue;
                 eb.AddField($"{com.Name} ", $"{com.Summary}");
             }
