@@ -15,6 +15,7 @@ namespace dnd_bot
     {
         public static DiscordSocketClient client;
         public CommandService Commands;
+        public static GetHelp helpComm;
         private IServiceProvider services;
         public CommandHandler commandHandler;
         public static SchedulingHelper Schelper;
@@ -42,7 +43,7 @@ namespace dnd_bot
                 DefaultRunMode = RunMode.Async,
                 LogLevel = LogSeverity.Debug
             });
-
+            helpComm = new GetHelp(Commands);
 
             services = new ServiceCollection()
                 .AddSingleton(this)
@@ -70,12 +71,10 @@ namespace dnd_bot
 
         private async Task Client_UserJoined(SocketGuildUser user)
         {
-            var playerRole = client.GetGuild(738549927537410048).GetRole(738556835036135467);
-            await (client.GetGuild(738549927537410048).GetChannel(738550230827532298) as ISocketMessageChannel).SendMessageAsync(Format.Bold($"{user.Mention}, welcome to the server!")); 
-            await user.AddRoleAsync(playerRole);
-            await user.SendMessageAsync(Format.Bold("Hello! Welcome to the server. I'm dndbot, and I was made specifically for this server."));
-            var eb = getHelp.helpTextEmbed;
-            await user.SendMessageAsync(null, false, eb.Build());
+        //    var playerRole = client.GetGuild(738549927537410048).GetRole(738556835036135467);
+        //    await (client.GetGuild(738549927537410048).GetChannel(738550230827532298) as ISocketMessageChannel).SendMessageAsync(Format.Bold($"{user.Mention}, welcome to the server!")); 
+        //    await user.AddRoleAsync(playerRole);
+        //    await user.SendMessageAsync(Format.Bold("Hello! Welcome to the server. I'm dndbot, and I was made specifically for this server."));
         }
 
         private async Task Client_Ready()

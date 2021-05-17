@@ -95,7 +95,7 @@ namespace dnd_bot
         public Embed buildEmbed()
         {
             var ebMsg = new EmbedBuilder();
-            ebMsg.WithTitle($"New Session Planned For: {cal.GetDayOfWeek(_date)}, {_date.Month}/{_date.Day}/{_date.Year} at {_time} (Military Time)");
+            ebMsg.WithTitle($"New Session Planned For: {cal.GetDayOfWeek(_date)}, {_date.Month}/{_date.Day}/{_date.Year} at {_time} PST (Military Time)");
             ebMsg.WithColor(Color.Blue);
             ebMsg.AddField("In Person attendees:", RSVPList.ToString(_rsvp.inPerson));
             ebMsg.AddField("Virtual attendees:", RSVPList.ToString(_rsvp.online));

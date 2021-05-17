@@ -17,10 +17,12 @@ namespace dnd_bot
         private theStatHandler _statHandler = new theStatHandler();
         private SchedulingHelper _schelper = Program.Schelper;
         private SpellHelper _spelper = new SpellHelper();
+        private GetHelp _helpHelper = Program.helpComm;
         private bool addingWeap = false;
 
         #region rollCommand
-        [Command("roll")]
+        [Command("roll"), Summary("Rolls the given damage dice. Usage: /roll [amount of dice]d[amount of sides] + [modifiers]. " +
+            "Example: /roll 1d4+1. Note: You don't have to use +, you can use any operator! -, *, /, they all work!")]
         public async Task roll(params string[] args)
         {
             string rollCode = args[0];
@@ -124,8 +126,6 @@ namespace dnd_bot
 
                 await Context.Channel.SendMessageAsync(null, false, eb.Build());
             }
-
-
         }
 #endregion
 
@@ -140,11 +140,12 @@ namespace dnd_bot
         [Command("help"), Alias("Help")]
         public async Task help()
         {
-            var eb = getHelp.helpTextEmbed;
+            var eb = _helpHelper.GetHelpTextEmbed();
             await Context.Channel.SendMessageAsync(null, false, eb.Build());
         }
 
-        [Command("schedule", RunMode = RunMode.Async)]
+        [Command("schedule", RunMode = RunMode.Async), Summary("Admin Command! Creates a message that users can react to in order to indicate whether they can make it to the indicated session." +
+            "Extra Info: you need to enter a date and a time after the command. Example: /schedule 01/01/2021 21:00. For ease of use, all times are in PST, and are in military time so as not to be confusing.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ScheduleGame(string date, string time)
         {
@@ -156,7 +157,7 @@ namespace dnd_bot
             _schelper.scheduleSession(date, time, Context);
 
         }
-        [Command("endschedule")]
+        [Command("endschedule"), Summary("If there is an existing scheduling tool, this command will end that scheduling tool.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task endSchedule()
         {
@@ -172,7 +173,8 @@ namespace dnd_bot
         #endregion
 
         #region APICommands
-        [Command("spell")]
+        [Command("spell"), 
+            Summary("This command searches the 5e SRD for the specified spell, and if it finds a match, it will give you a description of that spell! Just enter: /spell [spell name]")]
         public async Task findSpell(params string[] spellName)
         {
             if(spellName[0].ToLower() == "icup")
@@ -209,7 +211,6 @@ namespace dnd_bot
         //    melper.printMonster(Context);
         //}
         #endregion
-
 
         #region weaponsCommands
         [Command("addweapon", RunMode = RunMode.Async), 
@@ -252,7 +253,7 @@ namespace dnd_bot
             }
         }
 
-        [Command("getweapons"), Summary("Gets your weapon list.")]
+        [Command("getweapons"), Summary("Gets your weapon list. No extra info needed, just enter the command. ")]
         public async Task getWeapons()
         {
             var weaponList = _welper.GetWeapons();
@@ -344,22 +345,16 @@ namespace dnd_bot
             }
         }
 
-        [Command("removeweapon")]
+        [Command("removeweapon"), Summary("Removes the given weapon from your weapon list!")]
         public async Task removeWeapon(params string[] args)
         {
             await removeGivenWeapon(formatVariableInput(args), Context.User);
         }
-        [Command("removeweapon")]
+        [Command("removeweapon"), Summary("Admin Command! Removes the weapon from the given user's weapon list. Usage: /removeweapon @user [weapon name]")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task removeWeapon(string userMention, params string[] args)
+        public async Task removeWeapon(IUser user, params string[] args)
         {
-            var user = getUser(userMention);
-            if (user == null)
-            {
-                return;
-            }
-
-            await removeGivenWeapon(formatVariableInput(args), user);
+            await removeGivenWeapon(formatVariableInput(args), user as SocketUser);
         }
         private async Task removeGivenWeapon(string weaponName, SocketUser user)
         {
