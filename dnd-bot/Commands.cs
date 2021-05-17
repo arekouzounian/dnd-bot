@@ -210,7 +210,6 @@ namespace dnd_bot
         //}
         #endregion
 
-
         #region weaponsCommands
         [Command("addweapon", RunMode = RunMode.Async), 
             Summary("Adds a weapon to the user's weapon list! No extra info needed-just enter the command and follow the bot's instructions!")]
