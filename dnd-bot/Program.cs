@@ -75,7 +75,7 @@ namespace dnd_bot
 
         private async Task Client_Ready()
         {
-            await client.SetGameAsync("Dungeons & Dragons");
+            await client.SetGameAsync("D&D - /helpme");
         }
 
         private async Task Client_Log(LogMessage arg)

@@ -144,7 +144,7 @@ namespace dnd_bot
             await Context.Channel.SendMessageAsync(null, false, eb.Build());
         }
 
-        [Command("schedule", RunMode = RunMode.Async), Summary("Admin Command! Creates a message that users can react to in order to indicate whether they can make it to the indicated session." +
+        [Command("schedule", RunMode = RunMode.Async), Summary("Creates a message that users can react to in order to indicate whether they can make it to the indicated session." +
             "Extra Info: you need to enter a date and a time after the command. Example: /schedule 01/01/2021 21:00. For ease of use, all times are in PST, and are in military time so as not to be confusing.")]
         //[RequireUserPermission(GuildPermission.Administrator)]
         public async Task ScheduleGame(string date, string time)
