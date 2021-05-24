@@ -15,12 +15,12 @@ namespace dnd_bot
     {
         private DiscordSocketClient _client;
         Calendar cal;
-        private Dictionary<ulong, RSVPList> schedules; //maps embed msg id to rsvplist
+        private List<(ulong, ulong, RSVPList)> schedules; //Tuple for initiator id, embed msg id, RSVPlist
 
         public SchedulingHelper(DiscordSocketClient client)
         {
             _client = client;
-            schedules = new Dictionary<ulong, RSVPList>();
+            schedules = new List<(ulong, ulong, RSVPList)>();
             Setup();
             _client.ReactionAdded += onReactionAdded;
         }
@@ -32,16 +32,13 @@ namespace dnd_bot
 
         public async void scheduleSession(string date, string time, SocketCommandContext context)
         {
-            foreach(var val in schedules.Values)
-            { 
-                if(val.initiator.Id == context.User.Id)
-                {
-                    await context.Channel.SendMessageAsync("You can only schedule one session at a time!");
+            //checking if the user is already scheduling a session
+            for(int i = 0; i < schedules.Count; i++)
+            {
+                if (schedules[i].Item1 == context.User.Id)
                     return;
-                }
             }
-
-
+            //creating and filling new RSVPList
             RSVPList newList = new RSVPList();
             newList.hasResponded = new List<IUser>();
             newList.cannotCome = new List<IUser>();
@@ -56,27 +53,37 @@ namespace dnd_bot
             newList.time = time;
             newList.date = new DateTime(year, month, day);
             newList.msg = await context.Channel.SendMessageAsync(null, false, buildEmbed(newList));
-            schedules.Add(newList.msg.Id, newList);
+            schedules.Add((context.User.Id, newList.msg.Id, newList));
         }
 
         public bool endSession(ulong userId)
         {
-            return schedules.Remove(userId);
+            for(int i = 0; i < schedules.Count; ++i)
+            {
+                if (schedules[i].Item1 == userId)
+                {
+                    schedules.RemoveAt(i);
+                    return true;
+                } 
+            }
+            return false;
         }
 
         public async Task onReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            updateRSVP(reaction, channel);
+
+            for(int i = 0; i < schedules.Count; i++)
+            {
+                if(reaction.MessageId == schedules[i].Item2)
+                {
+                    updateRSVP(reaction, schedules[i].Item3);
+                    break;
+                }
+            }
         }
 
-        public async void updateRSVP(SocketReaction reaction, ISocketMessageChannel channel)
-        {
-            RSVPList _rsvp;
-            if (schedules.ContainsKey(reaction.MessageId))
-                _rsvp = schedules[reaction.MessageId];
-            else
-                return;
-            
+        public async void updateRSVP(SocketReaction reaction, RSVPList _rsvp)
+        {    
             var user = _client.GetUser(reaction.UserId);
             if (!_rsvp.hasResponded.Contains(user))
             {
@@ -150,11 +157,6 @@ namespace dnd_bot
                 strB.Append(",");
                 return strB.ToString().Replace(", ,", "");
             }
-
-            //public bool hasResponded(IUser user)
-            //{
-            //    return inPerson.Contains(user) || online.Contains(user) || cannotCome.Contains(user) || maybe.Contains(user);
-            //}
         }
     }
 }
