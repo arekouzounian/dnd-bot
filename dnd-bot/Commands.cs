@@ -393,7 +393,8 @@ namespace dnd_bot
         [Command("statRecord"), Alias("getRecords")]
         public async Task printRecords()
         {
-            var tup = _statHandler.getRecords();
+            var users = Context.Channel.GetUsersAsync();
+            var tup = _statHandler.getRecords(Context).Result;
             await Context.Channel.SendMessageAsync($"The stats have been rolled for {tup.Item3} days since the last reset.");
             if (tup.Item1.Key == null || tup.Item2.Key == null)
             {
@@ -401,8 +402,8 @@ namespace dnd_bot
                 return;
             }
 
-            await Context.Channel.SendMessageAsync($"The current record for lowest average belongs to {tup.Item1.Key.Username}, who had an average of: {tup.Item1.Value}");
-            await Context.Channel.SendMessageAsync($"The current record for highest average belongs to {tup.Item2.Key.Username}, who had an average of: {tup.Item2.Value}");
+            await Context.Channel.SendMessageAsync($"The current record for lowest average belongs to {tup.Item1.Key.Username}, who has an average of: {tup.Item1.Value}");
+            await Context.Channel.SendMessageAsync($"The current record for highest average belongs to {tup.Item2.Key.Username}, who has an average of: {tup.Item2.Value}");
         }
         #endregion
 

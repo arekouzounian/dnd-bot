@@ -1,10 +1,12 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace dnd_bot
 {
@@ -12,19 +14,13 @@ namespace dnd_bot
     {
         private string path;
         public StatSheet stats;
-
-        //storing records for stat average
-        public static KeyValuePair<IUser, int> lowRecord;
-        public static KeyValuePair<IUser, int> highRecord;
-        
+       
         //number of days since stat reset 
         public static int elapseCount;
 
         public theStatHandler()
         {
             elapseCount = elapseCount == default ? 0 : elapseCount;
-            lowRecord = lowRecord.Key == null ? new KeyValuePair<IUser, int>(null, 21) : lowRecord;
-            highRecord = highRecord.Key == null ? new KeyValuePair<IUser, int>(null, -1) : highRecord;
 
             stats = new StatSheet()
             {
@@ -125,27 +121,6 @@ namespace dnd_bot
             saveStatSheet(statSheet);
             msg.Append($"The average roll for {theStatText} today was: {rollCount / amtOfRolls}"); //calculating average
             Commands.splitUpLongMessageAsync(msg.ToString(), channel as ISocketMessageChannel); //sending the final text in as few messages as possible
-
-            //loop through every user
-            //find their career average over the given elapsed period
-            //for each average, compare it to the record. If larger or smaller
-            foreach (var user in users)
-            {
-                int avg = (int)getCareerAvg(user.Id);
-                if (avg == -1)
-                    continue;
-
-                if (avg < lowRecord.Value)
-                {
-                    //replace the lowRecord w/ new user.
-                    lowRecord = new KeyValuePair<IUser, int>(user, avg);
-                }
-                else if (avg > highRecord.Value)
-                {
-                    //replace the highRecord w/ new user.
-                    highRecord = new KeyValuePair<IUser, int>(user, avg);
-                }
-            }
         }
 
         /// <summary>
@@ -166,8 +141,32 @@ namespace dnd_bot
             }
         }
 
-        public Tuple<KeyValuePair<IUser, int>, KeyValuePair<IUser, int>, int> getRecords()
+        public async Task<Tuple<KeyValuePair<IUser, int>, KeyValuePair<IUser, int>, int>> getRecords(SocketCommandContext context)
         {
+            KeyValuePair<IUser, int> lowRecord = new KeyValuePair<IUser, int>(null, 0);
+            KeyValuePair<IUser, int> highRecord = new KeyValuePair<IUser, int>(null, 0);
+
+            int lowest = 21;
+            int highest = 0;
+
+            var users = context.Guild.Users;
+            foreach(var user in users)
+            {
+                if (user.IsBot)
+                    continue;
+                var avg = (int)getCareerAvg(user.Id);
+                if(avg < lowest)
+                {
+                    lowRecord = new KeyValuePair<IUser, int>(user, avg);
+                    lowest = avg;
+                }
+                else if(avg > highest)
+                {
+                    highRecord = new KeyValuePair<IUser, int>(user, avg);
+                    highest = avg;
+                }
+            }
+
             return new Tuple<KeyValuePair<IUser, int>, KeyValuePair<IUser, int>, int>(lowRecord, highRecord, elapseCount);
         }
 
