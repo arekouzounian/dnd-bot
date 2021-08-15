@@ -362,7 +362,7 @@ namespace dnd_bot
         #endregion
 
         #region theStatCommands
-        [Command("statAvg"), Alias("statAnvg")]
+        [Command("statAvg"), Alias("statAnvg", "statavg")]
         public async Task getStatAvg()
         {
             if (_statHandler.getCareerAvg(Context.User.Id) == -1)
@@ -388,6 +388,21 @@ namespace dnd_bot
             await Context.Channel.SendMessageAsync("Resetting total averages...");
             _statHandler.resetStatSheet(_statHandler.getStatSheet());
             await Context.Channel.SendMessageAsync("Reset Successful.");
+        }
+
+        [Command("statRecord"), Alias("getRecords")]
+        public async Task printRecords()
+        {
+            var tup = _statHandler.getRecords();
+            await Context.Channel.SendMessageAsync($"The stats have been rolled for {tup.Item3} days since the last reset.");
+            if (tup.Item1.Key == null || tup.Item2.Key == null)
+            {
+                await Context.Channel.SendMessageAsync("No other records to display here -- I need to collect more data first!");
+                return;
+            }
+
+            await Context.Channel.SendMessageAsync($"The current record for lowest average belongs to {tup.Item1.Key.Username}, who had an average of: {tup.Item1.Value}");
+            await Context.Channel.SendMessageAsync($"The current record for highest average belongs to {tup.Item2.Key.Username}, who had an average of: {tup.Item2.Value}");
         }
         #endregion
 

@@ -13,8 +13,19 @@ namespace dnd_bot
         private string path;
         public StatSheet stats;
 
+        //storing records for stat average
+        public static KeyValuePair<IUser, int> lowRecord;
+        public static KeyValuePair<IUser, int> highRecord;
+        
+        //number of days since stat reset 
+        public static int elapseCount;
+
         public theStatHandler()
         {
+            elapseCount = elapseCount == default ? 0 : elapseCount;
+            lowRecord = lowRecord.Key == null ? new KeyValuePair<IUser, int>(null, 21) : lowRecord;
+            highRecord = highRecord.Key == null ? new KeyValuePair<IUser, int>(null, -1) : highRecord;
+
             stats = new StatSheet()
             {
                 userStats = new Dictionary<ulong, List<double>>(),
@@ -70,6 +81,7 @@ namespace dnd_bot
             {
                 sw.WriteLine(JsonConvert.SerializeObject(stats));
             }
+            elapseCount = 0;
         }
 
 
@@ -79,6 +91,7 @@ namespace dnd_bot
         public async void rollForTheStat()
         {
             //initializing variables
+            elapseCount++;
             Random gen = new Random();
             var channel = Program.client.GetGuild(738549927537410048).GetChannel(738606355148963950);
             var users = Program.client.GetGuild(738549927537410048).Users;
@@ -95,7 +108,7 @@ namespace dnd_bot
                 if (user.IsBot)
                     continue;
                 amtOfRolls++;
-                var numRolled = gen.Next(1, 21);
+                var numRolled = gen.Next(1, 21); 
                 rollCount += numRolled;
                 msg.Append($"{user.Username}, you rolled {numRolled} for {theStatText} today.\n"); 
                 //checking if the statsheet has the user, and if so, adding their roll to their list of rolls
@@ -112,8 +125,28 @@ namespace dnd_bot
             saveStatSheet(statSheet);
             msg.Append($"The average roll for {theStatText} today was: {rollCount / amtOfRolls}"); //calculating average
             Commands.splitUpLongMessageAsync(msg.ToString(), channel as ISocketMessageChannel); //sending the final text in as few messages as possible
-        }
 
+            //loop through every user
+            //find their career average over the given elapsed period
+            //for each average, compare it to the record. If larger or smaller
+            foreach (var user in users)
+            {
+                int avg = (int)getCareerAvg(user.Id);
+                if (avg == -1)
+                    continue;
+
+                if (avg < lowRecord.Value)
+                {
+                    //replace the lowRecord w/ new user.
+                    lowRecord = new KeyValuePair<IUser, int>(user, avg);
+                }
+                else if (avg > highRecord.Value)
+                {
+                    //replace the highRecord w/ new user.
+                    highRecord = new KeyValuePair<IUser, int>(user, avg);
+                }
+            }
+        }
 
         /// <summary>
         /// Calculates the global average of a given user's rolls
@@ -131,6 +164,11 @@ namespace dnd_bot
             {
                 return -1; //returns -1 in the case of a user not having a career avg
             }
+        }
+
+        public Tuple<KeyValuePair<IUser, int>, KeyValuePair<IUser, int>, int> getRecords()
+        {
+            return new Tuple<KeyValuePair<IUser, int>, KeyValuePair<IUser, int>, int>(lowRecord, highRecord, elapseCount);
         }
 
 
