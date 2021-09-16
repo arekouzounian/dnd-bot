@@ -160,7 +160,7 @@ namespace dnd_bot
                     lowRecord = new KeyValuePair<IUser, int>(user, avg);
                     lowest = avg;
                 }
-                else if(avg > highest)
+                if(avg > highest)
                 {
                     highRecord = new KeyValuePair<IUser, int>(user, avg);
                     highest = avg;
